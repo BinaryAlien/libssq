@@ -111,6 +111,29 @@ Test(packet, init_multi, .description="Multi-response packet deserialization") {
     ssq_packet_free(packet);
 }
 
+Test(packet, init_compressed, .description="Multi-response compressed packet deserialization") {
+    const SSQ_PACKET ref = {
+        .header      = A2S_PACKET_HEADER_MULTI,
+        .id          = 0x12345678 | A2S_PACKET_ID_COMPRESSION_FLAG,
+        .total       = 3,
+        .number      = 0,
+        .size        = 1260,
+        .payload     = "somedata",
+        .payload_len = 9
+    };
+
+    char         datagram[128];
+    const size_t datagram_len = helper_serialize_multi(&ref, datagram);
+
+    SSQ_ERROR err;
+    ssq_error_clear(&err);
+
+    SSQ_PACKET *const packet = ssq_packet_init(datagram, datagram_len, &err);
+
+    cr_assert(err.code == SSQ_ERR_UNSUPPORTED);
+    cr_assert(packet   == NULL);
+}
+
 Test(packet, idcheck, .description="Packets ID check") {
     const uint8_t       packet_count = 4;
     SSQ_PACKET  **const packets      = helper_init_empty(packet_count);
@@ -133,7 +156,7 @@ Test(packet, idcheck, .description="Packets ID check") {
 Test(packet, concatpayloads, .description="Packets payload concatenation") {
     const size_t  payload_fragment_len = 3;
     const uint8_t packet_count         = 3;
-    const size_t payload_len           = payload_fragment_len * packet_count;
+    const size_t  payload_len          = payload_fragment_len * packet_count;
 
     const char   payload[] = {
         0x12, 0x34, 0x56, // Fragment #0
