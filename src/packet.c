@@ -4,8 +4,6 @@
 #include "ssq/helper.h"
 #include "ssq/packet.h"
 
-#define SSQ_PACKET_ID_COMPRESSION_FLAG 0x80000000
-
 static void ssq_packet_init_payload(
     SSQ_PACKET *const packet,
     SSQ_BUF    *const datagram_buf,
@@ -42,7 +40,7 @@ static void ssq_packet_init_multi(
     packet->size        = ssq_buf_get_uint16(datagram_buf);
     packet->payload_len = MIN(packet->size, datagram_buf->size - datagram_buf->pos);
 
-    if (packet->id & SSQ_PACKET_ID_COMPRESSION_FLAG)
+    if (packet->id & A2S_PACKET_ID_COMPRESSION_FLAG)
         ssq_error_set(err, SSQ_ERR_UNSUPPORTED, "Compressed responses are not supported");
     else
         ssq_packet_init_payload(packet, datagram_buf, err);

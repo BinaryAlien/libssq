@@ -9,6 +9,8 @@
 #define A2S_PACKET_HEADER_SINGLE (-1)
 #define A2S_PACKET_HEADER_MULTI  (-2)
 
+#define A2S_PACKET_ID_COMPRESSION_FLAG 0x80000000
+
 #ifdef __cplusplus
 extern "C" {
 #endif
