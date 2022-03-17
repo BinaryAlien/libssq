@@ -46,7 +46,7 @@ static A2S_SERVER_TYPE ssq_info_deserialize_servertype(SSQ_BUF *const buf) {
     }
 }
 
-static A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len, SSQ_ERROR *const err) {
+A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len, SSQ_ERROR *const err) {
     SSQ_BUF buf = ssq_buf_init(response, response_len);
 
     if (ssq_response_istruncated(response, response_len))

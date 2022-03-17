@@ -25,7 +25,7 @@ static inline void ssq_player_payload_setchall(char payload[], const int32_t cha
     memcpy(payload + A2S_PLAYER_PAYLOAD_LEN, &chall, sizeof (chall));
 }
 
-static A2S_PLAYER *ssq_player_deserialize(
+A2S_PLAYER *ssq_player_deserialize(
     const char       response[],
     const size_t     response_len,
     uint8_t   *const player_count,
