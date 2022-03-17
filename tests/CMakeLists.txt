@@ -22,6 +22,7 @@ include_directories(../include)
 
 add_executable(tests
     ${LIBRARY_SOURCES}
+    src/a2s/test_info.c
     src/test_packet.c
 )
 
