@@ -2,7 +2,7 @@
 #include <errno.h>
 #include "ssq/error.h"
 
-Test(error, set, .description="Set error") {
+Test(error, set, .description = "Set error") {
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
@@ -15,7 +15,7 @@ Test(error, set, .description="Set error") {
     cr_expect_str_eq(err.message, message);
 }
 
-Test(error, set_sys, .description="Set system error") {
+Test(error, set_sys, .description = "Set system error") {
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
@@ -26,7 +26,7 @@ Test(error, set_sys, .description="Set system error") {
     cr_expect_str_not_empty(err.message);
 }
 
-Test(error, clear, .description="Clear error") {
+Test(error, clear, .description = "Clear error") {
     SSQ_ERROR err;
     ssq_error_set(&err, SSQ_ERR_BADRES, "Bad response");
 

@@ -3,7 +3,7 @@
 
 A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len, SSQ_ERROR *const err);
 
-Test(a2s_info, css_wiki_example, .description="Counter-Strike: Source Wiki Example") {
+Test(a2s_info, css_wiki_example, .description = "Counter-Strike: Source Wiki Example") {
     const char response[] = {
         0x49, 0x02, 0x67, 0x61, 0x6D, 0x65, 0x32, 0x78, 0x73, 0x2E, 0x63, 0x6F, 0x6D, 0x20, 0x43, 0x6F,
         0x75, 0x6E, 0x74, 0x65, 0x72, 0x2D, 0x53, 0x74, 0x72, 0x69, 0x6B, 0x65, 0x20, 0x53, 0x6F, 0x75,
@@ -21,41 +21,41 @@ Test(a2s_info, css_wiki_example, .description="Counter-Strike: Source Wiki Examp
     A2S_INFO *const info = ssq_info_deserialize(response, response_len, &err);
 
     cr_assert_eq(err.code, SSQ_OK);
-
     cr_assert_neq(info, NULL);
-    cr_assert_eq(info->protocol, 2);
-    cr_assert_str_eq(info->name, "game2xs.com Counter-Strike Source #1");
-    cr_assert_eq(info->name_len, 36);
-    cr_assert_str_eq(info->map, "de_dust");
-    cr_assert_eq(info->map_len, 7);
-    cr_assert_str_eq(info->folder, "cstrike");
-    cr_assert_eq(info->folder_len, 7);
-    cr_assert_str_eq(info->game, "Counter-Strike: Source");
-    cr_assert_eq(info->game_len, 22);
-    cr_assert_eq(info->id, 240);
-    cr_assert_eq(info->players, 5);
-    cr_assert_eq(info->max_players, 16);
-    cr_assert_eq(info->bots, 4);
-    cr_assert_eq(info->server_type, A2S_SERVER_TYPE_DEDICATED);
-    cr_assert_eq(info->environment, A2S_ENVIRONMENT_LINUX);
-    cr_assert_eq(info->visibility, false);
-    cr_assert_eq(info->vac, false);
-    cr_assert_str_eq(info->version, "1.0.0.22");
-    cr_assert_eq(info->version_len, 8);
-    cr_assert_eq(info->edf, 0);
-    cr_assert_eq(info->port, 0);
-    cr_assert_eq(info->steamid, 0);
-    cr_assert_eq(info->stv_port, 0);
-    cr_assert_eq(info->stv_name, NULL);
-    cr_assert_eq(info->stv_name_len, 0);
-    cr_assert_eq(info->keywords, NULL);
-    cr_assert_eq(info->keywords_len, 0);
-    cr_assert_eq(info->gameid, 0);
+
+    cr_expect_eq(info->protocol, 2);
+    cr_expect_str_eq(info->name, "game2xs.com Counter-Strike Source #1");
+    cr_expect_eq(info->name_len, 36);
+    cr_expect_str_eq(info->map, "de_dust");
+    cr_expect_eq(info->map_len, 7);
+    cr_expect_str_eq(info->folder, "cstrike");
+    cr_expect_eq(info->folder_len, 7);
+    cr_expect_str_eq(info->game, "Counter-Strike: Source");
+    cr_expect_eq(info->game_len, 22);
+    cr_expect_eq(info->id, 240);
+    cr_expect_eq(info->players, 5);
+    cr_expect_eq(info->max_players, 16);
+    cr_expect_eq(info->bots, 4);
+    cr_expect_eq(info->server_type, A2S_SERVER_TYPE_DEDICATED);
+    cr_expect_eq(info->environment, A2S_ENVIRONMENT_LINUX);
+    cr_expect_eq(info->visibility, false);
+    cr_expect_eq(info->vac, false);
+    cr_expect_str_eq(info->version, "1.0.0.22");
+    cr_expect_eq(info->version_len, 8);
+    cr_expect_eq(info->edf, 0);
+    cr_expect_eq(info->port, 0);
+    cr_expect_eq(info->steamid, 0);
+    cr_expect_eq(info->stv_port, 0);
+    cr_expect_eq(info->stv_name, NULL);
+    cr_expect_eq(info->stv_name_len, 0);
+    cr_expect_eq(info->keywords, NULL);
+    cr_expect_eq(info->keywords_len, 0);
+    cr_expect_eq(info->gameid, 0);
 
     ssq_info_free(info);
 }
 
-Test(a2s_info, tf2_1, .description="skial.com | 2FORT+ | US 1") {
+Test(a2s_info, tf2_1, .description = "skial.com | 2FORT+ | US 1") {
     const char response[] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0x49, 0x11, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
         0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x73, 0x6B,
@@ -81,41 +81,41 @@ Test(a2s_info, tf2_1, .description="skial.com | 2FORT+ | US 1") {
     A2S_INFO *const info = ssq_info_deserialize(response, response_len, &err);
 
     cr_assert_eq(err.code, SSQ_OK);
-
     cr_assert_neq(info, NULL);
-    cr_assert_eq(info->protocol, 17);
-    cr_assert_str_eq(info->name, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01skial.com | 2FORT+ | US 1 \xE2\x96\x88\xE2\x96\x88\xE2\x96\x88\xE2\x96\x88");
-    cr_assert_eq(info->name_len, 62);
-    cr_assert_str_eq(info->map, "ctf_2fort");
-    cr_assert_eq(info->map_len, 9);
-    cr_assert_str_eq(info->folder, "tf");
-    cr_assert_eq(info->folder_len, 2);
-    cr_assert_str_eq(info->game, "\xE2\x96\x88\xE2\x96\x88 Skial \xE2\x96\x88\xE2\x96\x88");
-    cr_assert_eq(info->game_len, 19);
-    cr_assert_eq(info->id, 440);
-    cr_assert_eq(info->players, 27);
-    cr_assert_eq(info->max_players, 32);
-    cr_assert_eq(info->bots, 0);
-    cr_assert_eq(info->server_type, A2S_SERVER_TYPE_DEDICATED);
-    cr_assert_eq(info->environment, A2S_ENVIRONMENT_LINUX);
-    cr_assert_eq(info->visibility, false);
-    cr_assert_eq(info->vac, true);
-    cr_assert_str_eq(info->version, "6986594");
-    cr_assert_eq(info->version_len, 7);
-    cr_assert_eq(info->edf, 0xB1);
-    cr_assert_eq(info->port, 27015);
-    cr_assert_eq(info->steamid, 85568392920040230);
-    cr_assert_eq(info->stv_port, 0);
-    cr_assert_eq(info->stv_name, NULL);
-    cr_assert_eq(info->stv_name_len, 0);
-    cr_assert_str_eq(info->keywords, "skial,stats,free_items,free_unusuals,alltalk,ctf,increased_maxplayers,norespawntime");
-    cr_assert_eq(info->keywords_len, 83);
-    cr_assert_eq(info->gameid, 440);
+
+    cr_expect_eq(info->protocol, 17);
+    cr_expect_str_eq(info->name, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01skial.com | 2FORT+ | US 1 \xE2\x96\x88\xE2\x96\x88\xE2\x96\x88\xE2\x96\x88");
+    cr_expect_eq(info->name_len, 62);
+    cr_expect_str_eq(info->map, "ctf_2fort");
+    cr_expect_eq(info->map_len, 9);
+    cr_expect_str_eq(info->folder, "tf");
+    cr_expect_eq(info->folder_len, 2);
+    cr_expect_str_eq(info->game, "\xE2\x96\x88\xE2\x96\x88 Skial \xE2\x96\x88\xE2\x96\x88");
+    cr_expect_eq(info->game_len, 19);
+    cr_expect_eq(info->id, 440);
+    cr_expect_eq(info->players, 27);
+    cr_expect_eq(info->max_players, 32);
+    cr_expect_eq(info->bots, 0);
+    cr_expect_eq(info->server_type, A2S_SERVER_TYPE_DEDICATED);
+    cr_expect_eq(info->environment, A2S_ENVIRONMENT_LINUX);
+    cr_expect_eq(info->visibility, false);
+    cr_expect_eq(info->vac, true);
+    cr_expect_str_eq(info->version, "6986594");
+    cr_expect_eq(info->version_len, 7);
+    cr_expect_eq(info->edf, 0xB1);
+    cr_expect_eq(info->port, 27015);
+    cr_expect_eq(info->steamid, 85568392920040230);
+    cr_expect_eq(info->stv_port, 0);
+    cr_expect_eq(info->stv_name, NULL);
+    cr_expect_eq(info->stv_name_len, 0);
+    cr_expect_str_eq(info->keywords, "skial,stats,free_items,free_unusuals,alltalk,ctf,increased_maxplayers,norespawntime");
+    cr_expect_eq(info->keywords_len, 83);
+    cr_expect_eq(info->gameid, 440);
 
     ssq_info_free(info);
 }
 
-Test(a2s_info, bad_header, .description="Invalid response header") {
+Test(a2s_info, bad_header, .description = "Invalid response header") {
     const uint8_t bad_header = 0x00;
 
     const char response[] = {
@@ -136,7 +136,7 @@ Test(a2s_info, bad_header, .description="Invalid response header") {
 
     A2S_INFO *const info = ssq_info_deserialize(response, response_len, &err);
 
-    cr_assert_eq(err.code, SSQ_ERR_BADRES);
-    cr_assert_str_eq(err.message, "Invalid A2S_INFO response header");
-    cr_assert_eq(info, NULL);
+    cr_expect_eq(err.code, SSQ_ERR_BADRES);
+    cr_expect_str_eq(err.message, "Invalid A2S_INFO response header");
+    cr_expect_eq(info, NULL);
 }
