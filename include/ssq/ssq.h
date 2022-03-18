@@ -14,7 +14,7 @@
 #include "ssq/error.h"
 
 #define SSQ_TIMEOUT_RECV_DEFAULT_VALUE 5000 // ms
-#define SSQ_TIMEOUT_SEND_DEFAUlT_VALUE 5000 // ms
+#define SSQ_TIMEOUT_SEND_DEFAULT_VALUE 5000 // ms
 
 #ifdef __cplusplus
 extern "C" {

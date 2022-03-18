@@ -10,7 +10,7 @@ SSQ_QUERIER *ssq_init(void) {
         querier->addr_list = NULL;
         ssq_errclr(querier);
         ssq_set_timeout(querier, SSQ_TIMEOUT_RECV, SSQ_TIMEOUT_RECV_DEFAULT_VALUE);
-        ssq_set_timeout(querier, SSQ_TIMEOUT_SEND, SSQ_TIMEOUT_SEND_DEFAUlT_VALUE);
+        ssq_set_timeout(querier, SSQ_TIMEOUT_SEND, SSQ_TIMEOUT_SEND_DEFAULT_VALUE);
     }
 
     return querier;
