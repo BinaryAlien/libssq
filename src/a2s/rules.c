@@ -56,7 +56,7 @@ A2S_RULES *ssq_rules_deserialize(
             }
         }
     } else {
-        ssq_error_set(err, SSQ_ERR_BADRES, "Invalid A2S_RULES response_header");
+        ssq_error_set(err, SSQ_ERR_BADRES, "Invalid A2S_RULES response header");
     }
 
     return rules;
