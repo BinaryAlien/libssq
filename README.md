@@ -1,6 +1,6 @@
 # libssq
 
-☢️ An up-to-date [Source Server query protocol](https://developer.valvesoftware.com/wiki/Server_queries) library written in C.
+☢️ An up-to-date [Source Server query protocol](https://developer.valvesoftware.com/wiki/Server_queries) library written in C99.
 
 If you like this library, please let me know by adding a ⭐ to the repository!
 
@@ -19,11 +19,11 @@ However, it does **not** currently support **Goldsource** and **compressed** res
 
 The [repository wiki](https://github.com/BinaryAlien/libssq/wiki) pages contain all of the documentation for you to easily understand and make use of `libssq`.
 
-In order to quickly get started, check out the [**Getting started**](https://github.com/BinaryAlien/libssq/wiki/Getting-started) wiki page, as well as the [**example program**](https://github.com/BinaryAlien/libssq/blob/main/example/example.c).
+In order to quickly get started, check out the [Getting started](https://github.com/BinaryAlien/libssq/wiki/Getting-started) wiki page, as well as the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c).
 
 ## Build
 
-This library is meant to be built using [**CMake**](https://cmake.org/).
+This library is meant to be built using [CMake](https://cmake.org/).
 
 ### Example
 
