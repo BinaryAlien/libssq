@@ -91,7 +91,7 @@ bool ssq_buf_get_bool(SSQ_BUF *const buf) {
 static size_t ssq_buf_strlen(const SSQ_BUF *const buf) {
     size_t len = 0;
 
-    while (!ssq_buf_eob(buf) && buf->payload[buf->pos + len] != '\0')
+    while (buf->pos + len < buf->size && buf->payload[buf->pos + len] != '\0')
         ++len;
 
     return len;
