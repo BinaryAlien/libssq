@@ -15,10 +15,10 @@ static void helper_expect_players_eq(
     const int32_t           expected_score,
     const float             expected_duration
 ) {
-    cr_expect_eq(actual->index, expected_index);
-    cr_expect_str_eq(actual->name, expected_name);
-    cr_expect_eq(actual->name_len, strlen(expected_name));
-    cr_expect_eq(actual->score, expected_score);
+    cr_expect_eq(actual->index,          expected_index);
+    cr_expect_str_eq(actual->name,       expected_name);
+    cr_expect_eq(actual->name_len,       strlen(expected_name));
+    cr_expect_eq(actual->score,          expected_score);
     cr_expect_float_eq(actual->duration, expected_duration, 1e-6);
 }
 

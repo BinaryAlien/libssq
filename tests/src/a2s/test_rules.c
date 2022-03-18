@@ -9,8 +9,8 @@ A2S_RULES *ssq_rules_deserialize(
 );
 
 static void helper_expect_rules_eq(const A2S_RULES *const actual, const char expected_name[], const char expected_value[]) {
-    cr_expect_str_eq(actual->name, expected_name);
-    cr_expect_eq(actual->name_len, strlen(expected_name));
+    cr_expect_str_eq(actual->name,  expected_name);
+    cr_expect_eq(actual->name_len,  strlen(expected_name));
     cr_expect_str_eq(actual->value, expected_value);
     cr_expect_eq(actual->value_len, strlen(expected_value));
 }
@@ -137,13 +137,13 @@ Test(a2s_rules, wiki_example, .description = "Wiki Example") {
     cr_assert_neq(rules, NULL);
 
     helper_expect_rules_eq(rules + 0, "_tutor_bomb_viewable_check_interval", "0.5");
-    helper_expect_rules_eq(rules + 1, "_tutor_debug_level", "0");
-    helper_expect_rules_eq(rules + 2, "_tutor_examine_time", "0.5");
-    helper_expect_rules_eq(rules + 3, "_tutor_hint_interval_time", "10.0");
+    helper_expect_rules_eq(rules + 1, "_tutor_debug_level",                  "0");
+    helper_expect_rules_eq(rules + 2, "_tutor_examine_time",                 "0.5");
+    helper_expect_rules_eq(rules + 3, "_tutor_hint_interval_time",           "10.0");
 
     // ...
 
-    helper_expect_rules_eq(rules + rule_count - 1, "sv_waterfriction", "1");
+    helper_expect_rules_eq(rules + rule_count - 1, "sv_waterfriction",       "1");
 
     ssq_rules_free(rules, rule_count);
 

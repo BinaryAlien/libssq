@@ -1,5 +1,4 @@
 #include <criterion/criterion.h>
-#include <errno.h>
 #include "ssq/ssq.h"
 
 #ifdef _WIN32
@@ -13,13 +12,8 @@ static void helper_expect_timeouts_eq(const struct timeval actual, const time_t 
 }
 #endif /* _WIN32 */
 
-
 Test(ssq, init, .description = "Initialization") {
-    errno = 0;
-
     SSQ_QUERIER *const querier = ssq_init();
-
-    cr_expect_eq(errno, 0);
 
     cr_assert_neq(querier, NULL);
 
