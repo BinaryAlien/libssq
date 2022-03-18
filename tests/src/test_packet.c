@@ -62,16 +62,16 @@ Test(packet, init_single, .description="Single-response packet deserialization")
 
     SSQ_PACKET *const packet = ssq_packet_init(datagram, datagram_len, &err);
 
-    cr_assert(err.code == SSQ_OK);
+    cr_assert_eq(err.code, SSQ_OK);
 
-    cr_assert(packet              != NULL);
-    cr_assert(packet->header      == ref.header);
-    cr_assert(packet->id          == ref.id);
-    cr_assert(packet->total       == ref.total);
-    cr_assert(packet->number      == ref.number);
-    cr_assert(packet->size        == ref.size);
-    cr_assert(packet->payload     != NULL);
-    cr_assert(packet->payload_len == ref.payload_len);
+    cr_assert_neq(packet,             NULL);
+    cr_assert_eq(packet->header,      ref.header);
+    cr_assert_eq(packet->id,          ref.id);
+    cr_assert_eq(packet->total,       ref.total);
+    cr_assert_eq(packet->number,      ref.number);
+    cr_assert_eq(packet->size,        ref.size);
+    cr_assert_neq(packet->payload,    NULL);
+    cr_assert_eq(packet->payload_len, ref.payload_len);
     cr_assert_arr_eq(packet->payload, ref.payload, ref.payload_len);
 
     ssq_packet_free(packet);
@@ -96,16 +96,16 @@ Test(packet, init_multi, .description="Multi-response packet deserialization") {
 
     SSQ_PACKET *const packet = ssq_packet_init(datagram, datagram_len, &err);
 
-    cr_assert(err.code == SSQ_OK);
+    cr_assert_eq(err.code, SSQ_OK);
 
-    cr_assert(packet              != NULL);
-    cr_assert(packet->header      == ref.header);
-    cr_assert(packet->id          == ref.id);
-    cr_assert(packet->total       == ref.total);
-    cr_assert(packet->number      == ref.number);
-    cr_assert(packet->size        == ref.size);
-    cr_assert(packet->payload     != NULL);
-    cr_assert(packet->payload_len == ref.payload_len);
+    cr_assert_neq(packet,             NULL);
+    cr_assert_eq(packet->header,      ref.header);
+    cr_assert_eq(packet->id,          ref.id);
+    cr_assert_eq(packet->total,       ref.total);
+    cr_assert_eq(packet->number,      ref.number);
+    cr_assert_eq(packet->size,        ref.size);
+    cr_assert_neq(packet->payload,    NULL);
+    cr_assert_eq(packet->payload_len, ref.payload_len);
     cr_assert_arr_eq(packet->payload, ref.payload, ref.payload_len);
 
     ssq_packet_free(packet);
@@ -130,8 +130,8 @@ Test(packet, init_compressed, .description="Multi-response compressed packet des
 
     SSQ_PACKET *const packet = ssq_packet_init(datagram, datagram_len, &err);
 
-    cr_assert(err.code == SSQ_ERR_UNSUPPORTED);
-    cr_assert(packet   == NULL);
+    cr_assert_eq(err.code, SSQ_ERR_UNSUPPORTED);
+    cr_assert_eq(packet, NULL);
 }
 
 Test(packet, idcheck, .description="Packets ID check") {
@@ -182,10 +182,10 @@ Test(packet, concatpayloads, .description="Packets payload concatenation") {
     size_t       out_len = 0;
     char  *const out     = ssq_packet_concatpayloads((const SSQ_PACKET *const *)packets, packet_count, &out_len, &err);
 
-    cr_assert(err.code == SSQ_OK);
+    cr_assert_eq(err.code, SSQ_OK);
 
-    cr_assert(out      != NULL);
-    cr_assert(out_len  == payload_len);
+    cr_assert_neq(out, NULL);
+    cr_assert_eq(out_len, payload_len);
     cr_assert_arr_eq(out, payload, payload_len);
 
     free(out);

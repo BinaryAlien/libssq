@@ -8,11 +8,11 @@ A2S_RULES *ssq_rules_deserialize(
     SSQ_ERROR *const err
 );
 
-static void helper_assert_rule_eq(const A2S_RULES *const actual, const char expected_name[], const char expected_value[]) {
+static void helper_assert_rules_eq(const A2S_RULES *const actual, const char expected_name[], const char expected_value[]) {
     cr_assert_str_eq(actual->name, expected_name);
-    cr_assert(actual->name_len == strlen(expected_name));
+    cr_assert_eq(actual->name_len, strlen(expected_name));
     cr_assert_str_eq(actual->value, expected_value);
-    cr_assert(actual->value_len == strlen(expected_value));
+    cr_assert_eq(actual->value_len, strlen(expected_value));
 }
 
 Test(a2s_rules, wiki_example, .description="Wiki Example") {
@@ -132,19 +132,19 @@ Test(a2s_rules, wiki_example, .description="Wiki Example") {
     uint16_t         rule_count = 0;
     A2S_RULES *const rules      = ssq_rules_deserialize(response, response_len, &rule_count, &err);
 
-    cr_assert(err.code == SSQ_OK);
+    cr_assert_eq(err.code, SSQ_OK);
 
-    cr_assert(rule_count == 93);
-    cr_assert(rules != NULL);
+    cr_assert_eq(rule_count, 93);
+    cr_assert_neq(rules, NULL);
 
-    helper_assert_rule_eq(rules + 0, "_tutor_bomb_viewable_check_interval", "0.5");
-    helper_assert_rule_eq(rules + 1, "_tutor_debug_level", "0");
-    helper_assert_rule_eq(rules + 2, "_tutor_examine_time", "0.5");
-    helper_assert_rule_eq(rules + 3, "_tutor_hint_interval_time", "10.0");
+    helper_assert_rules_eq(rules + 0, "_tutor_bomb_viewable_check_interval", "0.5");
+    helper_assert_rules_eq(rules + 1, "_tutor_debug_level", "0");
+    helper_assert_rules_eq(rules + 2, "_tutor_examine_time", "0.5");
+    helper_assert_rules_eq(rules + 3, "_tutor_hint_interval_time", "10.0");
 
     // ...
 
-    helper_assert_rule_eq(rules + rule_count - 1, "sv_waterfriction", "1");
+    helper_assert_rules_eq(rules + rule_count - 1, "sv_waterfriction", "1");
 
     ssq_rules_free(rules, rule_count);
 
@@ -269,8 +269,8 @@ Test(a2s_rules, bad_header, .description="Invalid response header") {
     uint16_t         rule_count = 0;
     A2S_RULES *const rules      = ssq_rules_deserialize(response, response_len, &rule_count, &err);
 
-    cr_assert(err.code == SSQ_ERR_BADRES);
+    cr_assert_eq(err.code, SSQ_ERR_BADRES);
     cr_assert_str_eq(err.message, "Invalid A2S_RULES response header");
-    cr_assert(rules == NULL);
-    cr_assert(rule_count == 0);
+    cr_assert_eq(rules, NULL);
+    cr_assert_eq(rule_count, 0);
 }
