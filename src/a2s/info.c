@@ -108,18 +108,18 @@ A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len,
 }
 
 A2S_INFO *ssq_info(SSQ_QUERIER *const querier) {
-    char query_payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL];
-    ssq_info_payload_init(query_payload);
+    char payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL];
+    ssq_info_payload_init(payload);
 
     size_t response_len;
-    char  *response = ssq_query(querier, query_payload, A2S_INFO_PAYLOAD_LEN, &response_len);
+    char  *response = ssq_query(querier, payload, A2S_INFO_PAYLOAD_LEN, &response_len);
 
     while (ssq_ok(querier) && ssq_response_haschall(response, response_len)) {
         const int32_t query_chall = ssq_response_getchall(response, response_len);
-        ssq_info_payload_setchall(query_payload, query_chall);
+        ssq_info_payload_setchall(payload, query_chall);
 
         free(response);
-        response = ssq_query(querier, query_payload, A2S_INFO_PAYLOAD_LEN_WITH_CHALL, &response_len);
+        response = ssq_query(querier, payload, A2S_INFO_PAYLOAD_LEN_WITH_CHALL, &response_len);
     }
 
     A2S_INFO *info = NULL;

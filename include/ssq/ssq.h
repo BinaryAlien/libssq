@@ -1,11 +1,11 @@
-#ifndef SSQ_H
-#define SSQ_H
+#ifndef SSQ_SSQ_H
+#define SSQ_SSQ_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #ifdef _WIN32
-# include <Ws2Tcpip.h>
+# include <ws2tcpip.h>
 #else /* not _WIN32 */
 # include <netdb.h>
 # include <sys/time.h>
@@ -105,4 +105,4 @@ void ssq_errclr(SSQ_QUERIER *querier);
 }
 #endif
 
-#endif /* SSQ_H */
+#endif /* SSQ_SSQ_H */

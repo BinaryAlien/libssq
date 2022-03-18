@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include "ssq/error.h"
 
-#define A2S_PACKET_HEADER_SINGLE (-1)
-#define A2S_PACKET_HEADER_MULTI  (-2)
+#define A2S_PACKET_HEADER_SINGLE 0xFFFFFFFF
+#define A2S_PACKET_HEADER_MULTI  0xFFFFFFFE
 
 #define A2S_PACKET_ID_COMPRESSION_FLAG 0x80000000
 

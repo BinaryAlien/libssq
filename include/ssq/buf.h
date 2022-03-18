@@ -19,7 +19,7 @@ typedef struct ssq_buf {
  * Initializes a stack-allocated buffer wrapper.
  * @param src the source buffer to use
  * @param n   the length the buffer may read in the source buffer
- * @return    a newly stack-allocated buffer wrapper
+ * @return a newly stack-allocated buffer wrapper
  */
 SSQ_BUF ssq_buf_init(const void *src, size_t n);
 

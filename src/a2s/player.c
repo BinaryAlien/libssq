@@ -65,19 +65,19 @@ A2S_PLAYER *ssq_player_deserialize(
 }
 
 A2S_PLAYER *ssq_player(SSQ_QUERIER *const querier, uint8_t *const player_count) {
-    char query_payload[A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL];
-    ssq_player_payload_init(query_payload);
-    ssq_player_payload_setchall(query_payload, A2S_PLAYER_NOCHALL);
+    char payload[A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL];
+    ssq_player_payload_init(payload);
+    ssq_player_payload_setchall(payload, A2S_PLAYER_NOCHALL);
 
     size_t response_len;
-    char  *response = ssq_query(querier, query_payload, A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL, &response_len);
+    char  *response = ssq_query(querier, payload, A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL, &response_len);
 
     while (ssq_ok(querier) && ssq_response_haschall(response, response_len)) {
         const int32_t query_chall = ssq_response_getchall(response, response_len);
-        ssq_player_payload_setchall(query_payload, query_chall);
+        ssq_player_payload_setchall(payload, query_chall);
 
         free(response);
-        response = ssq_query(querier, query_payload, A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL, &response_len);
+        response = ssq_query(querier, payload, A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL, &response_len);
     }
 
     A2S_PLAYER *players = NULL;
