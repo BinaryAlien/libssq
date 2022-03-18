@@ -27,6 +27,7 @@ add_executable(tests
     src/a2s/test_rules.c
     src/test_error.c
     src/test_packet.c
+    src/test_response.c
     src/test_ssq.c
 )
 
