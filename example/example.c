@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     uint16_t    port;
 
     if (argc == 3)
-        port = atoi(argv[1]);
+        port = atoi(argv[2]);
     else
         port = DEFAULT_PORT;
 
