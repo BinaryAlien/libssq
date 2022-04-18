@@ -7,7 +7,7 @@ if (UNIX)
     add_definitions(-D_POSIX_C_SOURCE=200112L)
 endif (UNIX)
 
-project(ssq VERSION 1.0.0)
+project(ssq VERSION 1.0.1)
 
 include_directories(include)
 
