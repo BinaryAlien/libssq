@@ -38,7 +38,7 @@ static void ssq_packet_init_multi(
     packet->total       = ssq_buf_get_uint8(datagram_buf);
     packet->number      = ssq_buf_get_uint8(datagram_buf);
     packet->size        = ssq_buf_get_uint16(datagram_buf);
-    packet->payload_len = MIN(packet->size, datagram_buf->size - datagram_buf->pos);
+    packet->payload_len = minz(packet->size, ssq_buf_available(datagram_buf));
 
     if (packet->id & A2S_PACKET_ID_COMPRESSION_FLAG)
         ssq_error_set(err, SSQ_ERR_UNSUPPORTED, "Compressed responses are not supported");

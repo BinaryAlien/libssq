@@ -31,11 +31,18 @@ SSQ_BUF ssq_buf_init(const void *src, size_t n);
 void ssq_buf_forward(SSQ_BUF *buf, size_t n);
 
 /**
+ * Computes the number of bytes available to read from a buffer wrapper.
+ * @param buf the buffer wrapper
+ * @return number of bytes available to read from the buffer wrapper
+ */
+size_t ssq_buf_available(const SSQ_BUF *buf);
+
+/**
  * Determines if the end of a buffer wrapper was reached.
  * @param buf the buffer wrapper
- * @return true if the end of the buffer wrapper was reached
+ * @return true if there is no more bytes available to read
  */
-bool ssq_buf_eob(const SSQ_BUF *buf);
+bool ssq_buf_eob(const SSQ_BUF *const buf);
 
 /**
  * Reads N bytes of memory from a source buffer wrapper into a destination memory space.

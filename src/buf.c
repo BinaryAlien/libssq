@@ -13,11 +13,20 @@ SSQ_BUF ssq_buf_init(const void *src, const size_t n) {
     return buf;
 }
 
-void ssq_buf_forward(SSQ_BUF *const buf, const size_t n) { buf->pos += n; }
-bool ssq_buf_eob(const SSQ_BUF *const buf)               { return buf->pos >= buf->size; }
+void ssq_buf_forward(SSQ_BUF *const buf, const size_t n) {
+    buf->pos += n;
+}
+
+size_t ssq_buf_available(const SSQ_BUF *const buf) {
+    return (buf->pos < buf->size) ? (buf->size - buf->pos) : 0;
+}
+
+bool ssq_buf_eob(const SSQ_BUF *const buf) {
+    return ssq_buf_available(buf) == 0;
+}
 
 void ssq_buf_get(void *const dst, SSQ_BUF *const src, const size_t n) {
-    if (!ssq_buf_eob(src)) {
+    if (ssq_buf_available(src) >= n) {
         memcpy(dst, src->payload + src->pos, n);
         ssq_buf_forward(src, n);
     }
@@ -87,25 +96,28 @@ bool ssq_buf_get_bool(SSQ_BUF *const buf) {
     return ssq_buf_get_uint8(buf) != 0;
 }
 
-/* Computes the length of the null-terminated string at the buffer wrapper's current position */
+/* Computes the length of the null-terminated string at a buffer wrapper's current position. */
 static size_t ssq_buf_strlen(const SSQ_BUF *const buf) {
     size_t len = 0;
 
-    while (buf->pos + len < buf->size && buf->payload[buf->pos + len] != '\0')
+    while (len < ssq_buf_available(buf) && buf->payload[buf->pos + len] != '\0')
         ++len;
 
     return len;
 }
 
 char *ssq_buf_get_string(SSQ_BUF *const buf, size_t *const len) {
-    *len = ssq_buf_strlen(buf);
+    char *dst = NULL;
 
-    char *const dst = calloc(*len + 1, sizeof (*dst));
+    if (!ssq_buf_eob(buf)) {
+        *len = ssq_buf_strlen(buf);
+        dst = calloc(*len + 1, sizeof (*dst));
 
-    if (dst != NULL) {
-        const char *const src = buf->payload + buf->pos;
-        ssq_helper_strncpy(dst, src, *len);
-        ssq_buf_forward(buf, *len + 1);
+        if (dst != NULL) {
+            const char *const src = buf->payload + buf->pos;
+            ssq_helper_strncpy(dst, src, *len);
+            ssq_buf_forward(buf, *len + 1);
+        }
     }
 
     return dst;

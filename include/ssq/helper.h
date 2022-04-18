@@ -12,8 +12,9 @@
 #define SSQ_PORT_LEN  5
 #define SSQ_PORT_SIZE (SSQ_PORT_LEN + 1)
 
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+static inline size_t minz(const size_t x, const size_t y) {
+    return (x < y) ? x : y;
+}
 
 /**
  * Portable version of `strncpy`.
