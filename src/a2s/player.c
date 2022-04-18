@@ -5,7 +5,7 @@
 #include "ssq/query.h"
 #include "ssq/response.h"
 
-#define A2S_PLAYER_PAYLOAD_LEN 5
+#define A2S_PLAYER_PAYLOAD_LEN            5
 #define A2S_PLAYER_PAYLOAD_LEN_WITH_CHALL (A2S_PLAYER_PAYLOAD_LEN + sizeof (int32_t))
 
 #define A2S_HEADER_PLAYER 0x55

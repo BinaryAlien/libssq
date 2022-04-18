@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
     /* Initialization */
 
-    // Initialize a new heap-allocated Source server querier
+    // Initialize a new dynamically-allocated Source server querier
     SSQ_QUERIER *querier = ssq_init();
 
     // Assert that the memory allocation was successful

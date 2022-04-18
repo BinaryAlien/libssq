@@ -40,7 +40,7 @@ void ssq_error_set_sys(SSQ_ERROR *err);
  * Sets the error of an `SSQ_ERROR` struct to the last WSA error.
  * @param err the `SSQ_ERROR` struct
  */
-void ssq_error_set_wsa(SSQ_ERROR *const err);
+void ssq_error_set_wsa(SSQ_ERROR *err);
 #endif /* _WIN32 */
 
 /**

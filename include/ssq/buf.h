@@ -42,7 +42,7 @@ size_t ssq_buf_available(const SSQ_BUF *buf);
  * @param buf the buffer wrapper
  * @return true if there is no more bytes available to read
  */
-bool ssq_buf_eob(const SSQ_BUF *const buf);
+bool ssq_buf_eof(const SSQ_BUF *buf);
 
 /**
  * Reads N bytes of memory from a source buffer wrapper into a destination memory space.

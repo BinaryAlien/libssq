@@ -82,9 +82,11 @@ SSQ_PACKET *ssq_packet_init(
 bool ssq_packet_idcheck(const SSQ_PACKET *const *packets, uint8_t packet_count) {
     const uint32_t ref_id = packets[0]->id;
 
-    for (uint8_t i = 1; i < packet_count; ++i)
-        if (packets[i]->id != ref_id)
+    for (uint8_t i = 1; i < packet_count; ++i) {
+        if (packets[i]->id != ref_id) {
             return false;
+        }
+    }
 
     return true;
 }
@@ -129,9 +131,11 @@ void ssq_packet_free(SSQ_PACKET *const packet) {
 }
 
 void ssq_packet_freemany(SSQ_PACKET *packets[], const uint8_t packet_count) {
-    for (uint8_t i = 0; i < packet_count; ++i)
-        if (packets[i] != NULL)
+    for (uint8_t i = 0; i < packet_count; ++i) {
+        if (packets[i] != NULL) {
             ssq_packet_free(packets[i]);
+        }
+    }
 
     free(packets);
 }

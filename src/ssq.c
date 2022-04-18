@@ -32,10 +32,10 @@ void ssq_set_target(SSQ_QUERIER *const querier, const char hostname[], const uin
     hints.ai_family   = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
 
-    const int gai_code = getaddrinfo(hostname, port_str, &hints, &(querier->addr_list));
-    if (gai_code != 0) {
+    const int gai_errnum = getaddrinfo(hostname, port_str, &hints, &(querier->addr_list));
+    if (gai_errnum != 0) {
         querier->addr_list = NULL;
-        ssq_error_set(&(querier->err), SSQ_ERR_SYS, gai_strerror(gai_code));
+        ssq_error_set(&(querier->err), SSQ_ERR_SYS, gai_strerror(gai_errnum));
     }
 }
 

@@ -77,7 +77,7 @@ A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len,
             info->vac         = ssq_buf_get_bool(&buf);
             info->version     = ssq_buf_get_string(&buf, &(info->version_len));
 
-            if (!ssq_buf_eob(&buf)) {
+            if (!ssq_buf_eof(&buf)) {
                 info->edf = ssq_buf_get_uint8(&buf);
 
                 if (info->edf & A2S_INFO_FLAG_PORT)

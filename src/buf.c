@@ -21,7 +21,7 @@ size_t ssq_buf_available(const SSQ_BUF *const buf) {
     return (buf->pos < buf->size) ? (buf->size - buf->pos) : 0;
 }
 
-bool ssq_buf_eob(const SSQ_BUF *const buf) {
+bool ssq_buf_eof(const SSQ_BUF *const buf) {
     return ssq_buf_available(buf) == 0;
 }
 
@@ -109,7 +109,7 @@ static size_t ssq_buf_strlen(const SSQ_BUF *const buf) {
 char *ssq_buf_get_string(SSQ_BUF *const buf, size_t *const len) {
     char *dst = NULL;
 
-    if (!ssq_buf_eob(buf)) {
+    if (!ssq_buf_eof(buf)) {
         *len = ssq_buf_strlen(buf);
         dst = calloc(*len + 1, sizeof (*dst));
 

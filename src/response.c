@@ -18,7 +18,7 @@ int32_t ssq_response_getchall(const char response[], const size_t response_len) 
 }
 
 bool ssq_response_istruncated(const char response[], const size_t response_len) {
-    SSQ_BUF        buf         = ssq_buf_init(response, response_len);
-    const int32_t  first_bytes = ssq_buf_get_int32(&buf);
+    SSQ_BUF       buf         = ssq_buf_init(response, response_len);
+    const int32_t first_bytes = ssq_buf_get_int32(&buf);
     return first_bytes == A2S_PACKET_HEADER_SINGLE;
 }

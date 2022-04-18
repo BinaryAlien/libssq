@@ -52,10 +52,11 @@ static SOCKET ssq_query_init(SSQ_QUERIER *const querier) {
 }
 
 static void ssq_query_send(const SOCKET sockfd, const char payload[], const size_t payload_len, SSQ_ERROR *const err) {
-    if (send(sockfd, payload, (int)payload_len, 0) == SOCKET_ERROR) {
 #ifdef _WIN32
+    if (send(sockfd, payload, (int)payload_len, 0) == SOCKET_ERROR) {
         ssq_error_set_wsa(err);
 #else /* not _WIN32 */
+    if (send(sockfd, payload, payload_len, 0) == SOCKET_ERROR) {
         ssq_error_set_sys(err);
 #endif /* _WIN32 */
     }

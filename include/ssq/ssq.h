@@ -39,7 +39,7 @@ typedef struct ssq_querier {
 } SSQ_QUERIER;
 
 /**
- * Initializes a newly heap-allocated Source server querier.
+ * Initializes a newly dynamically-allocated Source server querier.
  * @returns a dynamically-allocated Source server querier
  */
 SSQ_QUERIER *ssq_init(void);

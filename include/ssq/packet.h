@@ -43,7 +43,7 @@ SSQ_PACKET *ssq_packet_init(const char datagram[], uint16_t datagram_len, SSQ_ER
 bool ssq_packet_idcheck(const SSQ_PACKET *const *packets, uint8_t packet_count);
 
 /**
- * Concatenates the payloads of an array of packets into a single heap-allocated buffer.
+ * Concatenates the payloads of an array of packets into a single dynamically-allocated buffer.
  * @param packets      the array of packets
  * @param packet_count number of packets in the packets array
  * @param out_len      length of the output buffer
