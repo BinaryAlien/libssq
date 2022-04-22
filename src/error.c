@@ -13,21 +13,21 @@ void ssq_error_set(
     const char           message[]
 ) {
     err->code = code;
-    ssq_helper_strncpy(err->message, message, SSQ_ERRMSG_LEN);
+    ssq_helper_strncpy(err->message, message, SSQ_ERROR_MESSAGE_LEN);
 }
 
-void ssq_error_set_sys(SSQ_ERROR *const err) {
+void ssq_error_set_from_errno(SSQ_ERROR *err) {
     err->code = SSQ_ERR_SYS;
 
 #ifdef _WIN32
-    strerror_s(err->message, SSQ_ERRMSG_SIZE, errno);
+    strerror_s(err->message, SSQ_ERROR_MESSAGE_SIZE, errno);
 #else /* not _WIN32 */
-    strerror_r(errno, err->message, SSQ_ERRMSG_SIZE);
+    strerror_r(errno, err->message, SSQ_ERROR_MESSAGE_SIZE);
 #endif /* _WIN32 */
 }
 
 #ifdef _WIN32
-void ssq_error_set_wsa(SSQ_ERROR *const err) {
+void ssq_error_set_from_wsa(SSQ_ERROR *const err) {
     err->code = SSQ_ERR_SYS;
 
     FormatMessage(
@@ -36,7 +36,7 @@ void ssq_error_set_wsa(SSQ_ERROR *const err) {
         WSAGetLastError(),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         err->message,
-        SSQ_ERRMSG_SIZE,
+        SSQ_ERROR_MESSAGE_SIZE,
         NULL
     );
 }

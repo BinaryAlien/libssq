@@ -5,49 +5,49 @@
 #include "ssq/packet.h"
 
 static void ssq_packet_init_payload(
-    SSQ_PACKET *const packet,
-    SSQ_BUF    *const datagram_buf,
+    SSQ_PACKET *const dst,
+    SSQ_BUF    *const src,
     SSQ_ERROR  *const err
 ) {
-    packet->payload = malloc(packet->payload_len);
+    dst->payload = malloc(dst->payload_len);
 
-    if (packet->payload != NULL)
-        ssq_buf_get(packet->payload, datagram_buf, packet->payload_len);
+    if (dst->payload != NULL)
+        ssq_buf_get(dst->payload, src, dst->payload_len);
     else
-        ssq_error_set_sys(err);
+        ssq_error_set_from_errno(err);
 }
 
 static void ssq_packet_init_single(
-    SSQ_PACKET *const packet,
-    SSQ_BUF    *const datagram_buf,
+    SSQ_PACKET *const dst,
+    SSQ_BUF    *const src,
     SSQ_ERROR  *const err
 ) {
-    packet->total       = 1;
-    packet->number      = 0;
-    packet->payload_len = datagram_buf->size - datagram_buf->pos;
+    dst->total       = 1;
+    dst->number      = 0;
+    dst->payload_len = src->payload_len - src->cursor;
 
-    ssq_packet_init_payload(packet, datagram_buf, err);
+    ssq_packet_init_payload(dst, src, err);
 }
 
 static void ssq_packet_init_multi(
-    SSQ_PACKET *const packet,
-    SSQ_BUF    *const datagram_buf,
+    SSQ_PACKET *const dst,
+    SSQ_BUF    *const src,
     SSQ_ERROR  *const err
 ) {
-    packet->id          = ssq_buf_get_int32(datagram_buf);
-    packet->total       = ssq_buf_get_uint8(datagram_buf);
-    packet->number      = ssq_buf_get_uint8(datagram_buf);
-    packet->size        = ssq_buf_get_uint16(datagram_buf);
-    packet->payload_len = minz(packet->size, ssq_buf_available(datagram_buf));
+    dst->id          = ssq_buf_get_int32(src);
+    dst->total       = ssq_buf_get_uint8(src);
+    dst->number      = ssq_buf_get_uint8(src);
+    dst->size        = ssq_buf_get_uint16(src);
+    dst->payload_len = ssq_helper_minz(dst->size, ssq_buf_available(src));
 
-    if (packet->id & A2S_PACKET_ID_COMPRESSION_FLAG)
+    if (dst->id & A2S_PACKET_FLAG_COMPRESSION)
         ssq_error_set(err, SSQ_ERR_UNSUPPORTED, "Compressed responses are not supported");
     else
-        ssq_packet_init_payload(packet, datagram_buf, err);
+        ssq_packet_init_payload(dst, src, err);
 }
 
-SSQ_PACKET *ssq_packet_init(
-    const char       datagram[],
+SSQ_PACKET *ssq_packet_from_datagram(
+    const uint8_t    datagram[],
     const uint16_t   datagram_len,
     SSQ_ERROR *const err
 ) {
@@ -73,17 +73,15 @@ SSQ_PACKET *ssq_packet_init(
             packet = NULL;
         }
     } else {
-        ssq_error_set_sys(err);
+        ssq_error_set_from_errno(err);
     }
 
     return packet;
 }
 
-bool ssq_packet_idcheck(const SSQ_PACKET *const *packets, uint8_t packet_count) {
-    const uint32_t ref_id = packets[0]->id;
-
+bool ssq_packets_verify_integrity(const SSQ_PACKET *const packets[], const uint8_t packet_count) {
     for (uint8_t i = 1; i < packet_count; ++i) {
-        if (packets[i]->id != ref_id) {
+        if (packets[i]->id != packets[0]->id) {
             return false;
         }
     }
@@ -91,25 +89,32 @@ bool ssq_packet_idcheck(const SSQ_PACKET *const *packets, uint8_t packet_count) 
     return true;
 }
 
-/* Computes the sum of the payload lengths of the packets in an array of packets */
-static size_t ssq_packet_lensum(const SSQ_PACKET *const packets[], const uint8_t packet_count) {
-    size_t len_sum = 0;
+/**
+ * Computes the sum of the lengths of the payloads in an array of packets.
+ *
+ * @param packets      array of packets
+ * @param packet_count number of packets in the packet array
+ *
+ * @return sum of the lengths of the payloads in the array of packets
+ */
+static size_t ssq_packets_payload_len_sum(const SSQ_PACKET *const packets[], const uint8_t packet_count) {
+    size_t len = 0;
 
     for (uint8_t i = 0; i < packet_count; ++i)
-         len_sum += packets[i]->payload_len;
+        len += packets[i]->payload_len;
 
-    return len_sum;
+    return len;
 }
 
-char *ssq_packet_concatpayloads(
+uint8_t *ssq_packets_to_response(
     const SSQ_PACKET *const packets[],
     const uint8_t           packet_count,
-    size_t           *const out_len,
+    size_t           *const buf_len,
     SSQ_ERROR        *const err
 ) {
-    *out_len = ssq_packet_lensum(packets, packet_count);
+    *buf_len = ssq_packets_payload_len_sum(packets, packet_count);
 
-    char *const out = calloc(*out_len, sizeof (*out));
+    uint8_t *const out = malloc(*buf_len);
 
     if (out != NULL) {
         size_t copy_offset = 0;
@@ -119,7 +124,7 @@ char *ssq_packet_concatpayloads(
             copy_offset += packets[i]->payload_len;
         }
     } else {
-        ssq_error_set_sys(err);
+        ssq_error_set_from_errno(err);
     }
 
     return out;
@@ -130,7 +135,7 @@ void ssq_packet_free(SSQ_PACKET *const packet) {
     free(packet);
 }
 
-void ssq_packet_freemany(SSQ_PACKET *packets[], const uint8_t packet_count) {
+void ssq_packets_free(SSQ_PACKET *packets[], const uint8_t packet_count) {
     for (uint8_t i = 0; i < packet_count; ++i) {
         if (packets[i] != NULL) {
             ssq_packet_free(packets[i]);

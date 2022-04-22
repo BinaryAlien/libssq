@@ -1,36 +1,36 @@
 #include <criterion/criterion.h>
 #include "ssq/response.h"
 
-Test(response, haschall_yes, .description = "Response has a challenge") {
-    const char   response[]   = { S2A_HEADER_CHALL, 0xDE, 0xAD, 0xBE, 0xEF };
-    const size_t response_len = sizeof (response);
+Test(response, has_challenge, .description = "Response has a challenge") {
+    const uint8_t response[]   = { S2A_HEADER_CHALL, 0xDE, 0xAD, 0xBE, 0xEF };
+    const size_t  response_len = sizeof (response);
 
-    cr_expect(ssq_response_haschall(response, response_len));
+    cr_expect(ssq_response_has_challenge(response, response_len));
 }
 
-Test(response, haschall_no, .description = "Response does not have challenge") {
+Test(response, has_no_challenge, .description = "Response does not have challenge") {
     const uint8_t not_s2a_header_chall = ~S2A_HEADER_CHALL;
 
-    const char   response[]   = { not_s2a_header_chall, 0xDE, 0xAD, 0xBE, 0xEF };
-    const size_t response_len = sizeof (response);
+    const uint8_t response[]   = { not_s2a_header_chall, 0xDE, 0xAD, 0xBE, 0xEF };
+    const size_t  response_len = sizeof (response);
 
-    cr_expect(!ssq_response_haschall(response, response_len));
+    cr_expect(!ssq_response_has_challenge(response, response_len));
 }
 
-Test(response, getchall, .description = "Get challenge from response") {
+Test(response, get_challenge, .description = "Get challenge from response") {
     const int32_t chall = 0xDEADBEEF;
 
     const size_t response_len = 1 + sizeof (chall);
-    char         response[response_len];
+    uint8_t      response[response_len];
 
     response[0] = S2A_HEADER_CHALL;
     memcpy(response + 1, &chall, sizeof (chall));
 
-    cr_expect_eq(ssq_response_getchall(response, response_len), chall);
+    cr_expect_eq(ssq_response_get_challenge(response, response_len), chall);
 }
 
-Test(response, istruncated_yes, .description = "Response was truncated") {
-   const char response[] = {
+Test(response, is_truncated, .description = "Response was truncated") {
+   const uint8_t response[] = {
         0xFF, 0xFF, 0xFF, 0xFF, 0x45, 0x5D, 0x00, 0x5F, 0x74, 0x75, 0x74, 0x6F, 0x72, 0x5F, 0x62, 0x6F,
         0x6D, 0x62, 0x5F, 0x76, 0x69, 0x65, 0x77, 0x61, 0x62, 0x6C, 0x65, 0x5F, 0x63, 0x68, 0x65, 0x63,
         0x6B, 0x5F, 0x69, 0x6E, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6C, 0x00, 0x30, 0x2E, 0x35, 0x00, 0x5F,
@@ -140,11 +140,11 @@ Test(response, istruncated_yes, .description = "Response was truncated") {
 
     const size_t response_len = sizeof (response);
 
-    cr_expect(ssq_response_istruncated(response, response_len));
+    cr_expect(ssq_response_is_truncated(response, response_len));
 }
 
-Test(response, istruncated_no, .description = "Response was not truncated") {
-    const char response[] = {
+Test(response, is_not_truncated, .description = "Response was not truncated") {
+    const uint8_t response[] = {
         0x49, 0x02, 0x67, 0x61, 0x6D, 0x65, 0x32, 0x78, 0x73, 0x2E, 0x63, 0x6F, 0x6D, 0x20, 0x43, 0x6F,
         0x75, 0x6E, 0x74, 0x65, 0x72, 0x2D, 0x53, 0x74, 0x72, 0x69, 0x6B, 0x65, 0x20, 0x53, 0x6F, 0x75,
         0x72, 0x63, 0x65, 0x20, 0x23, 0x31, 0x00, 0x64, 0x65, 0x5F, 0x64, 0x75, 0x73, 0x74, 0x00, 0x63,
@@ -155,5 +155,5 @@ Test(response, istruncated_no, .description = "Response was not truncated") {
 
     const size_t response_len = sizeof (response);
 
-    cr_expect(!ssq_response_istruncated(response, response_len));
+    cr_expect(!ssq_response_is_truncated(response, response_len));
 }

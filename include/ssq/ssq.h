@@ -39,34 +39,36 @@ typedef struct ssq_querier {
 } SSQ_QUERIER;
 
 /**
- * Initializes a newly dynamically-allocated Source server querier.
- * @returns a dynamically-allocated Source server querier
+ * Initializes a new Source server querier.
+ * @return new dynamically-allocated Source server querier
  */
 SSQ_QUERIER *ssq_init(void);
 
 /**
  * Frees a Source server querier.
- * @param querier the Source server querier to free
+ * @param querier Source server querier to free
  */
 void ssq_free(SSQ_QUERIER *querier);
 
 /**
  * Sets the target server of a Source server querier.
- * @param querier  the Source server querier
- * @param hostname the target Source server's hostname
- * @param port     the target Source server's port number
+ *
+ * @param querier  Source server querier
+ * @param hostname target hostname
+ * @param port     target port number
  */
 void ssq_set_target(SSQ_QUERIER *querier, const char *hostname, uint16_t port);
 
 /**
- * Sets the value of one or more timeouts of a Source server querier.
- * @param querier     the Source server querier
- * @param timeouts    the timeouts to set (bitwise)
- * @param value_in_ms the value to set in milliseconds
+ * Sets the timeouts of a Source server querier.
+ *
+ * @param querier     Source server querier
+ * @param which       timeouts to set (bitwise)
+ * @param value_in_ms value to set in milliseconds
  */
 void ssq_set_timeout(
     SSQ_QUERIER *querier,
-    SSQ_TIMEOUT  timeouts,
+    SSQ_TIMEOUT  which,
 #ifdef _WIN32
     DWORD        value_in_ms
 #else /* not _WIN32 */
@@ -75,22 +77,22 @@ void ssq_set_timeout(
 );
 
 /**
- * Gets the code of a Source server querier's last error.
- * @param querier the Source server querier
- * @return the code of a Source server querier's last error
+ * Gets the last error code of a Source server querier.
+ * @param querier Source server querier
+ * @return last error code of the Source server querier
  */
 SSQ_ERROR_CODE ssq_errc(const SSQ_QUERIER *querier);
 
 /**
- * Gets the message of a Source server querier's last error.
- * @param querier the Source server querier
- * @return the message of a Source server querier's last error
+ * Gets the last error message of a Source server querier.
+ * @param querier Source server querier
+ * @return last error message of the Source server querier
  */
 const char *ssq_errm(const SSQ_QUERIER *querier);
 
 /**
  * Checks if a Source server querier has an error currently set.
- * @param querier the Source server querier
+ * @param querier Source server querier
  * @return true if the Source server querier has an error currently set
  */
 bool ssq_ok(const SSQ_QUERIER *querier);

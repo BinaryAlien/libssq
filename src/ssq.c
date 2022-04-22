@@ -24,8 +24,8 @@ void ssq_free(SSQ_QUERIER *const querier) {
 void ssq_set_target(SSQ_QUERIER *const querier, const char hostname[], const uint16_t port) {
     freeaddrinfo(querier->addr_list);
 
-    char port_str[SSQ_PORT_SIZE];
-    ssq_helper_port2str(port, port_str);
+    char port_str[SSQ_PORT_SIZE] = { '\0' };
+    ssq_helper_port_to_str(port, port_str);
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof (hints));
@@ -40,28 +40,39 @@ void ssq_set_target(SSQ_QUERIER *const querier, const char hostname[], const uin
 }
 
 void ssq_set_timeout(
-    SSQ_QUERIER    *const querier,
-    const enum ssq_timeout       timeout,
+    SSQ_QUERIER *const querier,
+    const SSQ_TIMEOUT  which,
 #ifdef _WIN32
-    const DWORD                  value_in_ms
+    const DWORD        value_in_ms
 #else /* not _WIN32 */
-    const time_t                 value_in_ms
+    const time_t       value_in_ms
 #endif /* _WIN32 */
 ) {
 #ifdef _WIN32
-    if (timeout & SSQ_TIMEOUT_RECV)
+    if (which & SSQ_TIMEOUT_RECV)
         querier->timeout_recv = value_in_ms;
-    if (timeout & SSQ_TIMEOUT_SEND)
+    if (which & SSQ_TIMEOUT_SEND)
         querier->timeout_send = value_in_ms;
 #else /* not _WIN32 */
-    if (timeout & SSQ_TIMEOUT_RECV)
-        ssq_helper_ms2tv(value_in_ms, &(querier->timeout_recv));
-    if (timeout & SSQ_TIMEOUT_SEND)
-        ssq_helper_ms2tv(value_in_ms, &(querier->timeout_send));
+    if (which & SSQ_TIMEOUT_RECV)
+        ssq_helper_ms_to_tv(value_in_ms, &(querier->timeout_recv));
+    if (which & SSQ_TIMEOUT_SEND)
+        ssq_helper_ms_to_tv(value_in_ms, &(querier->timeout_send));
 #endif /* _WIN32 */
 }
 
-SSQ_ERROR_CODE ssq_errc(const SSQ_QUERIER *const querier) { return querier->err.code; }
-bool           ssq_ok(const SSQ_QUERIER *const querier)   { return ssq_errc(querier) == SSQ_OK; }
-const char    *ssq_errm(const SSQ_QUERIER *const querier) { return querier->err.message; }
-void           ssq_errclr(SSQ_QUERIER *const querier)     { ssq_error_clear(&(querier->err)); }
+SSQ_ERROR_CODE ssq_errc(const SSQ_QUERIER *const querier) {
+    return querier->err.code;
+}
+
+bool ssq_ok(const SSQ_QUERIER *const querier) {
+    return ssq_errc(querier) == SSQ_OK;
+}
+
+const char *ssq_errm(const SSQ_QUERIER *const querier) {
+    return querier->err.message;
+}
+
+void ssq_errclr(SSQ_QUERIER *const querier) {
+    ssq_error_clear(&(querier->err));
+}

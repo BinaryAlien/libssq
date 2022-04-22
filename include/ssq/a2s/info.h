@@ -30,13 +30,13 @@ typedef enum a2s_environment {
 typedef struct a2s_info {
     uint8_t         protocol;     /** Protocol version used by the server                      */
     char           *name;         /** Name of the server                                       */
-    size_t          name_len;     /** Length of the `name` string                              */
+    size_t          name_len;     /** Length of the `name' string                              */
     char           *map;          /** Map the server has currently loaded                      */
-    size_t          map_len;      /** Length of the `map` string                               */
+    size_t          map_len;      /** Length of the `map' string                               */
     char           *folder;       /** Name of the folder containing the game files             */
-    size_t          folder_len;   /** Length of the `folder` string                            */
+    size_t          folder_len;   /** Length of the `folder' string                            */
     char           *game;         /** Full name of the game                                    */
-    size_t          game_len;     /** Length of the `game` string                              */
+    size_t          game_len;     /** Length of the `game' string                              */
     uint16_t        id;           /** Steam Application ID of game                             */
     uint8_t         players;      /** Number of players on the server                          */
     uint8_t         max_players;  /** Maximum number of players the server reports it can hold */
@@ -46,30 +46,39 @@ typedef struct a2s_info {
     bool            visibility;   /** Whether the server requires a password                   */
     bool            vac;          /** Whether the server uses VAC                              */
     char           *version;      /** Version of the game installed on the server              */
-    size_t          version_len;  /** Length of the `version` string                           */
+    size_t          version_len;  /** Length of the `version' string                           */
     uint8_t         edf;          /** Extra Data Flag                                          */
     uint16_t        port;         /** The server's game port number                            */
     uint64_t        steamid;      /** Server's SteamID                                         */
     uint16_t        stv_port;     /** Spectator port number for SourceTV                       */
     char           *stv_name;     /** Name of the spectator server for SourceTV                */
-    size_t          stv_name_len; /** Length of the `stv_name` string                          */
+    size_t          stv_name_len; /** Length of the `stv_name' string                          */
     char           *keywords;     /** Tags that describe the game according to the server      */
-    size_t          keywords_len; /** Length of the `keywords` string                          */
+    size_t          keywords_len; /** Length of the `keywords' string                          */
     uint64_t        gameid;       /** The server's 64-bit GameID                               */
 } A2S_INFO;
 
 /**
- * Sends an A2S_INFO query.
+ * Sends an A2S_INFO query to a Source game server.
+ *
  * @param querier Source server querier to use
- * @return an `A2S_INFO` struct containing basic information about the server
+ *
+ * @return an `A2S_INFO' struct containing basic information
+ *         about the server, or NULL if there was an error
  */
 A2S_INFO *ssq_info(SSQ_QUERIER *querier);
 
 /**
- * Frees an `A2S_INFO` struct.
- * @param info the `A2S_INFO` struct to free
+ * Frees an `A2S_INFO' struct.
+ * @param info `A2S_INFO' struct to free
  */
 void ssq_info_free(A2S_INFO *info);
+
+static inline bool ssq_info_has_gameid(const A2S_INFO *const info) { return info->edf & A2S_INFO_FLAG_GAMEID; }
+static inline bool ssq_info_has_keywords(const A2S_INFO *const info) { return info->edf & A2S_INFO_FLAG_KEYWORDS; }
+static inline bool ssq_info_has_port(const A2S_INFO *const info) { return info->edf & A2S_INFO_FLAG_PORT; }
+static inline bool ssq_info_has_steamid(const A2S_INFO *const info) { return info->edf & A2S_INFO_FLAG_STEAMID; }
+static inline bool ssq_info_has_stv(const A2S_INFO *const info) { return info->edf & A2S_INFO_FLAG_STV; }
 
 #ifdef __cplusplus
 }

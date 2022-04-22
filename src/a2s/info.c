@@ -5,26 +5,28 @@
 #include "ssq/query.h"
 #include "ssq/response.h"
 
-#define A2S_INFO_PAYLOAD_LEN            25
-#define A2S_INFO_PAYLOAD_LEN_WITH_CHALL (A2S_INFO_PAYLOAD_LEN + sizeof (int32_t))
-
 #define A2S_HEADER_INFO 0x54
 #define S2A_HEADER_INFO 0x49
 
-const uint8_t g_a2s_info_payload[A2S_INFO_PAYLOAD_LEN] = {
+#define A2S_INFO_PAYLOAD_LEN                   29
+#define A2S_INFO_PAYLOAD_LEN_WITHOUT_CHALLENGE (A2S_INFO_PAYLOAD_LEN - 4)
+#define A2S_INFO_PAYLOAD_CHALLENGE_OFFSET      25
+
+static const uint8_t g_a2s_info_payload_template[A2S_INFO_PAYLOAD_LEN] = {
     0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_INFO,
-    'S', 'o', 'u', 'r', 'c',
-    'e', ' ', 'E', 'n', 'g',
-    'i', 'n', 'e', ' ', 'Q',
-    'u', 'e', 'r', 'y', '\0'
+    0x53, 0x6F, 0x75, 0x72, 0x63,
+    0x65, 0x20, 0x45, 0x6E, 0x67,
+    0x69, 0x6E, 0x65, 0x20, 0x51,
+    0x75, 0x65, 0x72, 0x79, 0x00,
+    0xFF, 0xFF, 0xFF, 0xFF
 };
 
-static inline void ssq_info_payload_init(char payload[]) {
-    memcpy(payload, g_a2s_info_payload, A2S_INFO_PAYLOAD_LEN);
+static inline void ssq_info_payload_init(uint8_t payload[A2S_INFO_PAYLOAD_LEN]) {
+    memcpy(payload, g_a2s_info_payload_template, A2S_INFO_PAYLOAD_LEN);
 }
 
-static inline void ssq_info_payload_setchall(char payload[], const int32_t chall) {
-    memcpy(payload + A2S_INFO_PAYLOAD_LEN, &chall, sizeof (chall));
+static inline void ssq_info_payload_set_challenge(uint8_t payload[A2S_INFO_PAYLOAD_LEN], const int32_t chall) {
+    memcpy(payload + A2S_INFO_PAYLOAD_CHALLENGE_OFFSET, &chall, sizeof (chall));
 }
 
 static A2S_ENVIRONMENT ssq_info_deserialize_environment(SSQ_BUF *const buf) {
@@ -37,7 +39,7 @@ static A2S_ENVIRONMENT ssq_info_deserialize_environment(SSQ_BUF *const buf) {
     }
 }
 
-static A2S_SERVER_TYPE ssq_info_deserialize_servertype(SSQ_BUF *const buf) {
+static A2S_SERVER_TYPE ssq_info_deserialize_server_type(SSQ_BUF *const buf) {
     switch (ssq_buf_get_uint8(buf)) {
         case 'd': return A2S_SERVER_TYPE_DEDICATED;
         case 'l': return A2S_SERVER_TYPE_NON_DEDICATED;
@@ -46,15 +48,15 @@ static A2S_SERVER_TYPE ssq_info_deserialize_servertype(SSQ_BUF *const buf) {
     }
 }
 
-A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len, SSQ_ERROR *const err) {
-    SSQ_BUF buf = ssq_buf_init(response, response_len);
+A2S_INFO *ssq_info_deserialize(const uint8_t payload[], const size_t payload_len, SSQ_ERROR *const err) {
+    A2S_INFO *info = NULL;
 
-    if (ssq_response_istruncated(response, response_len))
-        ssq_buf_forward(&buf, sizeof (int32_t));
+    SSQ_BUF buf = ssq_buf_init(payload, payload_len);
+
+    if (ssq_response_is_truncated(payload, payload_len))
+        ssq_buf_forward(&buf, 4);
 
     const uint8_t response_header = ssq_buf_get_uint8(&buf);
-
-    A2S_INFO *info = NULL;
 
     if (response_header == S2A_HEADER_INFO) {
         info = malloc(sizeof (*info));
@@ -71,7 +73,7 @@ A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len,
             info->players     = ssq_buf_get_uint8(&buf);
             info->max_players = ssq_buf_get_uint8(&buf);
             info->bots        = ssq_buf_get_uint8(&buf);
-            info->server_type = ssq_info_deserialize_servertype(&buf);
+            info->server_type = ssq_info_deserialize_server_type(&buf);
             info->environment = ssq_info_deserialize_environment(&buf);
             info->visibility  = ssq_buf_get_bool(&buf);
             info->vac         = ssq_buf_get_bool(&buf);
@@ -98,7 +100,7 @@ A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len,
                     info->gameid = ssq_buf_get_uint64(&buf);
             }
         } else {
-            ssq_error_set_sys(err);
+            ssq_error_set_from_errno(err);
         }
     } else {
         ssq_error_set(err, SSQ_ERR_BADRES, "Invalid A2S_INFO response header");
@@ -107,22 +109,28 @@ A2S_INFO *ssq_info_deserialize(const char response[], const size_t response_len,
     return info;
 }
 
-A2S_INFO *ssq_info(SSQ_QUERIER *const querier) {
-    char payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL];
+static uint8_t *ssq_info_query(SSQ_QUERIER *const querier, size_t *const response_len) {
+    uint8_t payload[A2S_INFO_PAYLOAD_LEN];
     ssq_info_payload_init(payload);
 
-    size_t response_len;
-    char  *response = ssq_query(querier, payload, A2S_INFO_PAYLOAD_LEN, &response_len);
+    uint8_t *response = ssq_query(querier, payload, A2S_INFO_PAYLOAD_LEN_WITHOUT_CHALLENGE, response_len);
 
-    while (ssq_ok(querier) && ssq_response_haschall(response, response_len)) {
-        const int32_t query_chall = ssq_response_getchall(response, response_len);
-        ssq_info_payload_setchall(payload, query_chall);
+    while (ssq_ok(querier) && ssq_response_has_challenge(response, *response_len)) {
+        const int32_t chall = ssq_response_get_challenge(response, *response_len);
+        ssq_info_payload_set_challenge(payload, chall);
 
         free(response);
-        response = ssq_query(querier, payload, A2S_INFO_PAYLOAD_LEN_WITH_CHALL, &response_len);
+        response = ssq_query(querier, payload, A2S_INFO_PAYLOAD_LEN, response_len);
     }
 
+    return response;
+}
+
+A2S_INFO *ssq_info(SSQ_QUERIER *const querier) {
     A2S_INFO *info = NULL;
+
+    size_t         response_len;
+    uint8_t *const response = ssq_info_query(querier, &response_len);
 
     if (ssq_ok(querier)) {
         info = ssq_info_deserialize(response, response_len, &(querier->err));
@@ -139,10 +147,10 @@ void ssq_info_free(A2S_INFO *const info) {
     free(info->game);
     free(info->version);
 
-    if (info->edf & A2S_INFO_FLAG_STV)
+    if (ssq_info_has_stv(info))
         free(info->stv_name);
 
-    if (info->edf & A2S_INFO_FLAG_KEYWORDS)
+    if (ssq_info_has_keywords(info))
         free(info->keywords);
 
     free(info);

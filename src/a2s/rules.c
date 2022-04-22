@@ -5,28 +5,26 @@
 #include "ssq/query.h"
 #include "ssq/response.h"
 
-#define A2S_RULES_PAYLOAD_LEN            5
-#define A2S_RULES_PAYLOAD_LEN_WITH_CHALL (A2S_RULES_PAYLOAD_LEN + sizeof (int32_t))
-
 #define A2S_HEADER_RULES 0x56
 #define S2A_HEADER_RULES 0x45
 
-#define A2S_RULES_NOCHALL 0xFFFFFFFF
+#define A2S_RULES_PAYLOAD_LEN              9
+#define A2S_RULES_PAYLOAD_CHALLENGE_OFFSET 5
 
-const uint8_t g_a2s_rules_payload[A2S_RULES_PAYLOAD_LEN] = {
-    0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_RULES
+static const uint8_t g_a2s_rules_payload_template[A2S_RULES_PAYLOAD_LEN] = {
+    0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_RULES, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-static inline void ssq_rules_payload_init(char payload[]) {
-    memcpy(payload, g_a2s_rules_payload, A2S_RULES_PAYLOAD_LEN);
+static inline void ssq_rules_payload_init(uint8_t payload[A2S_RULES_PAYLOAD_LEN]) {
+    memcpy(payload, g_a2s_rules_payload_template, A2S_RULES_PAYLOAD_LEN);
 }
 
-static inline void ssq_rules_payload_setchall(char payload[], const int32_t chall) {
-    memcpy(payload + A2S_RULES_PAYLOAD_LEN, &chall, sizeof (chall));
+static inline void ssq_rules_payload_set_challenge(uint8_t payload[A2S_RULES_PAYLOAD_LEN], const int32_t chall) {
+    memcpy(payload + A2S_RULES_PAYLOAD_CHALLENGE_OFFSET, &chall, sizeof (chall));
 }
 
 A2S_RULES *ssq_rules_deserialize(
-    const char       response[],
+    const uint8_t    response[],
     const size_t     response_len,
     uint16_t  *const rule_count,
     SSQ_ERROR *const err
@@ -35,8 +33,8 @@ A2S_RULES *ssq_rules_deserialize(
 
     SSQ_BUF buf = ssq_buf_init(response, response_len);
 
-    if (ssq_response_istruncated(response, response_len))
-        ssq_buf_forward(&buf, sizeof (int32_t));
+    if (ssq_response_is_truncated(response, response_len))
+        ssq_buf_forward(&buf, 4);
 
     const uint8_t response_header = ssq_buf_get_uint8(&buf);
 
@@ -52,7 +50,7 @@ A2S_RULES *ssq_rules_deserialize(
                     rules[i].value = ssq_buf_get_string(&buf, &(rules[i].value_len));
                 }
             } else {
-                ssq_error_set_sys(err);
+                ssq_error_set_from_errno(err);
             }
         }
     } else {
@@ -62,23 +60,28 @@ A2S_RULES *ssq_rules_deserialize(
     return rules;
 }
 
-A2S_RULES *ssq_rules(SSQ_QUERIER *const querier, uint16_t *const rule_count) {
-    char payload[A2S_RULES_PAYLOAD_LEN_WITH_CHALL];
+static uint8_t *ssq_rules_query(SSQ_QUERIER *const querier, size_t *const response_len) {
+    uint8_t payload[A2S_RULES_PAYLOAD_LEN];
     ssq_rules_payload_init(payload);
-    ssq_rules_payload_setchall(payload, A2S_RULES_NOCHALL);
 
-    size_t response_len;
-    char  *response = ssq_query(querier, payload, A2S_RULES_PAYLOAD_LEN_WITH_CHALL, &response_len);
+    uint8_t *response = ssq_query(querier, payload, A2S_RULES_PAYLOAD_LEN, response_len);
 
-    while (ssq_ok(querier) && ssq_response_haschall(response, response_len)) {
-        const int32_t query_chall = ssq_response_getchall(response, response_len);
-        ssq_rules_payload_setchall(payload, query_chall);
+    while (ssq_ok(querier) && ssq_response_has_challenge(response, *response_len)) {
+        const int32_t chall = ssq_response_get_challenge(response, *response_len);
+        ssq_rules_payload_set_challenge(payload, chall);
 
         free(response);
-        response = ssq_query(querier, payload, A2S_RULES_PAYLOAD_LEN_WITH_CHALL, &response_len);
+        response = ssq_query(querier, payload, A2S_RULES_PAYLOAD_LEN, response_len);
     }
 
+    return response;
+}
+
+A2S_RULES *ssq_rules(SSQ_QUERIER *const querier, uint16_t *const rule_count) {
     A2S_RULES *rules = NULL;
+
+    size_t         response_len;
+    uint8_t *const response = ssq_rules_query(querier, &response_len);
 
     if (ssq_ok(querier)) {
         rules = ssq_rules_deserialize(response, response_len, rule_count, &(querier->err));

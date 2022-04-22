@@ -1,8 +1,8 @@
 #ifndef SSQ_ERROR_H
 #define SSQ_ERROR_H
 
-#define SSQ_ERRMSG_LEN  511
-#define SSQ_ERRMSG_SIZE (SSQ_ERRMSG_LEN + 1)
+#define SSQ_ERROR_MESSAGE_LEN  511
+#define SSQ_ERROR_MESSAGE_SIZE (SSQ_ERROR_MESSAGE_LEN + 1)
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,34 +18,39 @@ typedef enum ssq_error_code {
 
 typedef struct ssq_error {
     SSQ_ERROR_CODE code;
-    char           message[SSQ_ERRMSG_SIZE];
+    char           message[SSQ_ERROR_MESSAGE_SIZE];
 } SSQ_ERROR;
 
 /**
- * Sets the error of an `SSQ_ERROR` struct.
- * @param err     the `SSQ_ERROR` struct
- * @param code    error code to set
- * @param message error message to copy
+ * Sets the error of an `SSQ_ERROR' struct.
+ *
+ * @param err     `SSQ_ERROR' struct
+ * @param code    code to set
+ * @param message message to set
  */
 void ssq_error_set(SSQ_ERROR *err, SSQ_ERROR_CODE code, const char *message);
 
 /**
- * Sets the error of an `SSQ_ERROR` struct to the last `errno` error.
- * @param err the `SSQ_ERROR` struct
+ * Sets the code of an `SSQ_ERROR' struct to system error and
+ * sets the message to the corresponding `errno' error.
+ *
+ * @param err `SSQ_ERROR' struct
  */
-void ssq_error_set_sys(SSQ_ERROR *err);
+void ssq_error_set_from_errno(SSQ_ERROR *err);
 
 #ifdef _WIN32
 /**
- * Sets the error of an `SSQ_ERROR` struct to the last WSA error.
- * @param err the `SSQ_ERROR` struct
+ * Sets the code of an `SSQ_ERROR' struct to system error
+ * and sets the message to the corresponding WSA error.
+ *
+ * @param err `SSQ_ERROR' struct
  */
-void ssq_error_set_wsa(SSQ_ERROR *err);
+void ssq_error_set_from_wsa(SSQ_ERROR *err);
 #endif /* _WIN32 */
 
 /**
- * Clears the error of an `SSQ_ERROR` struct.
- * @param err the `SSQ_ERROR` struct to clear
+ * Clears the error of an `SSQ_ERROR' struct.
+ * @param err `SSQ_ERROR' struct to clear
  */
 void ssq_error_clear(SSQ_ERROR *err);
 
