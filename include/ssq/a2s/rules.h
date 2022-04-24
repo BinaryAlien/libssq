@@ -20,8 +20,8 @@ typedef struct a2s_rules {
  * @param querier    Source server querier to use
  * @param rule_count where to store the number of rules in the output array
  *
- * @return an array of `A2S_RULES' structs containing the rules
- *         the server is using, or NULL if an error occurred
+ * @return dynamically-allocated array of `A2S_RULES' structs containing the
+ *         rules the server is using, or NULL if an error occurred
  */
 A2S_RULES *ssq_rules(SSQ_QUERIER *querier, uint16_t *rule_count);
 

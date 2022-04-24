@@ -63,7 +63,7 @@ typedef struct a2s_info {
  *
  * @param querier Source server querier to use
  *
- * @return an `A2S_INFO' struct containing basic information
+ * @return dynamically-allocated `A2S_INFO' struct containing basic information
  *         about the server, or NULL if there was an error
  */
 A2S_INFO *ssq_info(SSQ_QUERIER *querier);

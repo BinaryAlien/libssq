@@ -40,7 +40,7 @@ typedef struct ssq_querier {
 
 /**
  * Initializes a new Source server querier.
- * @return new dynamically-allocated Source server querier
+ * @return new dynamically-allocated Source server querier or NULL in case of a memory allocation failure
  */
 SSQ_QUERIER *ssq_init(void);
 
@@ -99,7 +99,7 @@ bool ssq_ok(const SSQ_QUERIER *querier);
 
 /**
  * Clears a Source server querier's last error.
- * @param querier the Source server querier
+ * @param querier Source server querier
  */
 void ssq_errclr(SSQ_QUERIER *querier);
 
