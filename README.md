@@ -30,6 +30,8 @@ This library is meant to be built using [CMake](https://cmake.org/).
 * Building the library from the root of the repository.
 
 ```sh
+$ pwd
+~/libssq
 $ mkdir build
 $ cd build
 $ cmake ..
@@ -39,6 +41,8 @@ $ cmake --build .
 * Building the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c) using `gcc` from the root of the repository.
 
 ```sh
+$ pwd
+~/libssq
 $ gcc -Iinclude example/example.c -o ssq -Lbuild -lssq
 $ ./ssq
 usage: ./ssq hostname [port]

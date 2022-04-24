@@ -11,6 +11,8 @@ This test suite is meant to be built using [CMake](https://cmake.org/).
 * Building from the `tests` folder.
 
 ```sh
+$ pwd
+~/libssq/tests
 $ mkdir build
 $ cd build
 $ cmake ..
@@ -19,8 +21,10 @@ $ cmake --build .
 
 ## Running
 
-* Run the `tests` executable.
+* Run the `tests` executable from the `tests` directory.
 
 ```sh
-$ ./tests
+$ pwd
+~/libssq/tests
+$ ./build/tests
 ```

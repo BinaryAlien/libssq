@@ -1,73 +1,79 @@
 #include <criterion/criterion.h>
+#include "helper.h"
 #include "ssq/a2s/player.h"
+#include "ssq/packet.h"
 
-A2S_PLAYER *ssq_player_deserialize(
-    const uint8_t    response[],
-    const size_t     response_len,
-    uint8_t   *const player_count,
-    SSQ_ERROR *const err
-);
+A2S_PLAYER *ssq_player_deserialize(const uint8_t *response, size_t response_len, uint8_t *player_count, SSQ_ERROR *err);
 
-static void helper_expect_players_eq(
-    const A2S_PLAYER *const actual,
-    const uint8_t           expected_index,
-    const char              expected_name[],
-    const int32_t           expected_score,
-    const float             expected_duration
-) {
-    cr_expect_eq(actual->index,          expected_index);
-    cr_expect_str_eq(actual->name,       expected_name);
-    cr_expect_eq(actual->name_len,       strlen(expected_name));
-    cr_expect_eq(actual->score,          expected_score);
-    cr_expect_float_eq(actual->duration, expected_duration, 1e-6);
-}
-
-Test(a2s_player, wiki_example, .description = "Wiki Example") {
-    const uint8_t response[] = {
-        0x44, 0x02, 0x01, 0x5B, 0x44, 0x5D, 0x2D, 0x2D, 0x2D, 0x2D, 0x3E, 0x54, 0x2E, 0x4E, 0x2E, 0x57,
-        0x3C, 0x2D, 0x2D, 0x2D, 0x2D, 0x00, 0x0E, 0x00, 0x00, 0x00, 0xB4, 0x97, 0x00, 0x44, 0x02, 0x4B,
-        0x69, 0x6C, 0x6C, 0x65, 0x72, 0x20, 0x21, 0x21, 0x21, 0x00, 0x05, 0x00, 0x00, 0x00, 0x69, 0x24,
-        0xD9, 0x43
-    };
-
-    const size_t response_len = sizeof (response);
+Test(a2s_player, example_0) {
+    size_t   datagram_len;
+    uint8_t *datagram = read_datagram("dgram/player/example_0.bin", &datagram_len);
 
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
-    uint8_t           player_count = 0;
-    A2S_PLAYER *const players      = ssq_player_deserialize(response, response_len, &player_count, &err);
+    SSQ_PACKET *packet = ssq_packet_from_datagram(datagram, datagram_len, &err);
 
     cr_assert_eq(err.code, SSQ_OK);
-    cr_assert_eq(player_count, 2);
+    cr_assert_neq(packet, NULL);
+
+    size_t   response_len;
+    uint8_t *response = ssq_packets_to_response((const SSQ_PACKET *const *)(&packet), 1, &response_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(response, NULL);
+
+    uint8_t     player_count = 0;
+    A2S_PLAYER *players      = ssq_player_deserialize(response, response_len, &player_count, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
     cr_assert_neq(players, NULL);
+    cr_assert_eq(player_count, 2);
 
-    helper_expect_players_eq(players + 0, 1, "[D]---->T.N.W<----", 14, 514.370361);
-    helper_expect_players_eq(players + 1, 2, "Killer !!!", 5, 434.284454);
+    cr_expect_eq(players[0].index, 1);
+    cr_expect_str_eq(players[0].name, "[D]---->T.N.W<----");
+    cr_expect_eq(players[0].name_len, 18);
+    cr_expect_eq(players[0].score, 14);
+    cr_expect_float_eq(players[0].duration, 514.370361F, 1e-6);
 
+    cr_expect_eq(players[1].index, 2);
+    cr_expect_str_eq(players[1].name, "Killer !!!");
+    cr_expect_eq(players[1].name_len, 10);
+    cr_expect_eq(players[1].score, 5);
+    cr_expect_float_eq(players[1].duration, 434.284454F, 1e-6);
+
+    free(datagram);
+    ssq_packet_free(packet);
+    free(response);
     ssq_player_free(players, player_count);
 }
 
-Test(a2s_player, bad_header, .description = "Invalid response header") {
-    const uint8_t bad_header = 0x00;
-
-    const uint8_t response[] = {
-        bad_header, 0x02, 0x01, 0x5B, 0x44, 0x5D, 0x2D, 0x2D, 0x2D, 0x2D, 0x3E, 0x54, 0x2E, 0x4E, 0x2E, 0x57,
-        0x3C, 0x2D, 0x2D, 0x2D, 0x2D, 0x00, 0x0E, 0x00, 0x00, 0x00, 0xB4, 0x97, 0x00, 0x44, 0x02, 0x4B,
-        0x69, 0x6C, 0x6C, 0x65, 0x72, 0x20, 0x21, 0x21, 0x21, 0x00, 0x05, 0x00, 0x00, 0x00, 0x69, 0x24,
-        0xD9, 0x43
-    };
-
-    const size_t response_len = sizeof (response);
+Test(a2s_player, bad_header) {
+    size_t   datagram_len;
+    uint8_t *datagram = read_datagram("dgram/info/css.bin", &datagram_len);
 
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
-    uint8_t           player_count = 0;
-    A2S_PLAYER *const players      = ssq_player_deserialize(response, response_len, &player_count, &err);
+    SSQ_PACKET *packet = ssq_packet_from_datagram(datagram, datagram_len, &err);
 
-    cr_expect_eq(err.code, SSQ_ERR_BADRES);
-    cr_expect_str_eq(err.message, "Invalid A2S_PLAYER response header");
-    cr_expect_eq(players, NULL);
-    cr_expect_eq(player_count, 0);
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(packet, NULL);
+
+    size_t   response_len;
+    uint8_t *response = ssq_packets_to_response((const SSQ_PACKET *const *)(&packet), 1, &response_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(response, NULL);
+
+    uint8_t     player_count = 0;
+    A2S_PLAYER *players      = ssq_player_deserialize(response, response_len, &player_count, &err);
+
+    cr_assert_eq(err.code, SSQ_ERR_BADRES);
+    cr_assert_str_eq(err.message, "Invalid A2S_PLAYER response header");
+    cr_assert_eq(players, NULL);
+
+    free(datagram);
+    ssq_packet_free(packet);
+    free(response);
 }

@@ -1,142 +1,151 @@
 #include <criterion/criterion.h>
+#include "helper.h"
 #include "ssq/a2s/info.h"
+#include "ssq/packet.h"
 
-A2S_INFO *ssq_info_deserialize(const uint8_t response[], const size_t response_len, SSQ_ERROR *const err);
+A2S_INFO *ssq_info_deserialize(const uint8_t *response, size_t response_len, SSQ_ERROR *err);
 
-Test(a2s_info, css_wiki_example, .description = "Counter-Strike: Source Wiki Example") {
-    const uint8_t response[] = {
-        0x49, 0x02, 0x67, 0x61, 0x6D, 0x65, 0x32, 0x78, 0x73, 0x2E, 0x63, 0x6F, 0x6D, 0x20, 0x43, 0x6F,
-        0x75, 0x6E, 0x74, 0x65, 0x72, 0x2D, 0x53, 0x74, 0x72, 0x69, 0x6B, 0x65, 0x20, 0x53, 0x6F, 0x75,
-        0x72, 0x63, 0x65, 0x20, 0x23, 0x31, 0x00, 0x64, 0x65, 0x5F, 0x64, 0x75, 0x73, 0x74, 0x00, 0x63,
-        0x73, 0x74, 0x72, 0x69, 0x6B, 0x65, 0x00, 0x43, 0x6F, 0x75, 0x6E, 0x74, 0x65, 0x72, 0x2D, 0x53,
-        0x74, 0x72, 0x69, 0x6B, 0x65, 0x3A, 0x20, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x00, 0xF0, 0x00,
-        0x05, 0x10, 0x04, 0x64, 0x6C, 0x00, 0x00, 0x31, 0x2E, 0x30, 0x2E, 0x30, 0x2E, 0x32, 0x32, 0x00
-    };
-
-    const size_t response_len = sizeof (response);
+Test(a2s_info, css) {
+    size_t   datagram_len;
+    uint8_t *datagram = read_datagram("dgram/info/css.bin", &datagram_len);
 
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
-    A2S_INFO *const info = ssq_info_deserialize(response, response_len, &err);
+    SSQ_PACKET *packet = ssq_packet_from_datagram(datagram, datagram_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(packet, NULL);
+
+    size_t   response_len;
+    uint8_t *response = ssq_packets_to_response((const SSQ_PACKET *const *)(&packet), 1, &response_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(response, NULL);
+
+    A2S_INFO *info = ssq_info_deserialize(response, response_len, &err);
 
     cr_assert_eq(err.code, SSQ_OK);
     cr_assert_neq(info, NULL);
 
     cr_expect_eq(info->protocol, 2);
-    cr_expect_str_eq(info->name,     "game2xs.com Counter-Strike Source #1");
-    cr_expect_eq(info->name_len,     36);
-    cr_expect_str_eq(info->map,      "de_dust");
-    cr_expect_eq(info->map_len,      7);
-    cr_expect_str_eq(info->folder,   "cstrike");
-    cr_expect_eq(info->folder_len,   7);
-    cr_expect_str_eq(info->game,     "Counter-Strike: Source");
-    cr_expect_eq(info->game_len,     22);
-    cr_expect_eq(info->id,           240);
-    cr_expect_eq(info->players,      5);
-    cr_expect_eq(info->max_players,  16);
-    cr_expect_eq(info->bots,         4);
-    cr_expect_eq(info->server_type,  A2S_SERVER_TYPE_DEDICATED);
-    cr_expect_eq(info->environment,  A2S_ENVIRONMENT_LINUX);
-    cr_expect(!info->visibility);
-    cr_expect(!info->vac);
-    cr_expect_str_eq(info->version,  "1.0.0.22");
-    cr_expect_eq(info->version_len,  8);
-    cr_expect_eq(info->edf,          0);
-    cr_expect_eq(info->port,         0);
-    cr_expect_eq(info->steamid,      0);
-    cr_expect_eq(info->stv_port,     0);
-    cr_expect_eq(info->stv_name,     NULL);
+    cr_expect_str_eq(info->name, "game2xs.com Counter-Strike Source #1");
+    cr_expect_eq(info->name_len, 36);
+    cr_expect_str_eq(info->map, "de_dust");
+    cr_expect_eq(info->map_len, 7);
+    cr_expect_str_eq(info->folder, "cstrike");
+    cr_expect_eq(info->folder_len, 7);
+    cr_expect_str_eq(info->game, "Counter-Strike: Source");
+    cr_expect_eq(info->game_len, 22);
+    cr_expect_eq(info->id, 240);
+    cr_expect_eq(info->players, 5);
+    cr_expect_eq(info->max_players, 16);
+    cr_expect_eq(info->bots, 4);
+    cr_expect_eq(info->server_type, A2S_SERVER_TYPE_DEDICATED);
+    cr_expect_eq(info->environment, A2S_ENVIRONMENT_LINUX);
+    cr_expect_eq(info->visibility, false);
+    cr_expect_eq(info->vac, false);
+    cr_expect_str_eq(info->version, "1.0.0.22");
+    cr_expect_eq(info->version_len, 8);
+    cr_expect_eq(info->edf, 0);
+    cr_expect_eq(info->port, 0);
+    cr_expect_eq(info->steamid, 0);
+    cr_expect_eq(info->stv_port, 0);
+    cr_expect_eq(info->stv_name, NULL);
     cr_expect_eq(info->stv_name_len, 0);
-    cr_expect_eq(info->keywords,     NULL);
+    cr_expect_eq(info->keywords, NULL);
     cr_expect_eq(info->keywords_len, 0);
-    cr_expect_eq(info->gameid,       0);
+    cr_expect_eq(info->gameid, 0);
 
     ssq_info_free(info);
+    free(datagram);
+    ssq_packet_free(packet);
+    free(response);
 }
 
-Test(a2s_info, tf2_1, .description = "skial.com | 2FORT+ | US 1") {
-    const uint8_t response[] = {
-        0xFF, 0xFF, 0xFF, 0xFF, 0x49, 0x11, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x73, 0x6B,
-        0x69, 0x61, 0x6C, 0x2E, 0x63, 0x6F, 0x6D, 0x20, 0x7C, 0x20, 0x32, 0x46, 0x4F, 0x52, 0x54, 0x2B,
-        0x20, 0x7C, 0x20, 0x55, 0x53, 0x20, 0x31, 0x20, 0xE2, 0x96, 0x88, 0xE2, 0x96, 0x88, 0xE2, 0x96,
-        0x88, 0xE2, 0x96, 0x88, 0x00, 0x63, 0x74, 0x66, 0x5F, 0x32, 0x66, 0x6F, 0x72, 0x74, 0x00, 0x74,
-        0x66, 0x00, 0xE2, 0x96, 0x88, 0xE2, 0x96, 0x88, 0x20, 0x53, 0x6B, 0x69, 0x61, 0x6C, 0x20, 0xE2,
-        0x96, 0x88, 0xE2, 0x96, 0x88, 0x00, 0xB8, 0x01, 0x1B, 0x20, 0x00, 0x64, 0x6C, 0x00, 0x01, 0x36,
-        0x39, 0x38, 0x36, 0x35, 0x39, 0x34, 0x00, 0xB1, 0x87, 0x69, 0x26, 0x03, 0x00, 0x00, 0x00, 0x00,
-        0x30, 0x01, 0x73, 0x6B, 0x69, 0x61, 0x6C, 0x2C, 0x73, 0x74, 0x61, 0x74, 0x73, 0x2C, 0x66, 0x72,
-        0x65, 0x65, 0x5F, 0x69, 0x74, 0x65, 0x6D, 0x73, 0x2C, 0x66, 0x72, 0x65, 0x65, 0x5F, 0x75, 0x6E,
-        0x75, 0x73, 0x75, 0x61, 0x6C, 0x73, 0x2C, 0x61, 0x6C, 0x6C, 0x74, 0x61, 0x6C, 0x6B, 0x2C, 0x63,
-        0x74, 0x66, 0x2C, 0x69, 0x6E, 0x63, 0x72, 0x65, 0x61, 0x73, 0x65, 0x64, 0x5F, 0x6D, 0x61, 0x78,
-        0x70, 0x6C, 0x61, 0x79, 0x65, 0x72, 0x73, 0x2C, 0x6E, 0x6F, 0x72, 0x65, 0x73, 0x70, 0x61, 0x77,
-        0x6E, 0x74, 0x69, 0x6D, 0x65, 0x00, 0xB8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    };
-
-    const size_t response_len = sizeof (response);
+Test(a2s_info, tf2) {
+    size_t   datagram_len;
+    uint8_t *datagram = read_datagram("dgram/info/tf2.bin", &datagram_len);
 
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
-    A2S_INFO *const info = ssq_info_deserialize(response, response_len, &err);
+    SSQ_PACKET *packet = ssq_packet_from_datagram(datagram, datagram_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(packet, NULL);
+
+    size_t   response_len;
+    uint8_t *response = ssq_packets_to_response((const SSQ_PACKET *const *)(&packet), 1, &response_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(response, NULL);
+
+    A2S_INFO *info = ssq_info_deserialize(response, response_len, &err);
 
     cr_assert_eq(err.code, SSQ_OK);
     cr_assert_neq(info, NULL);
 
-    cr_expect_eq(info->protocol,     17);
-    cr_expect_str_eq(info->name,     "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01skial.com | 2FORT+ | US 1 \xE2\x96\x88\xE2\x96\x88\xE2\x96\x88\xE2\x96\x88");
-    cr_expect_eq(info->name_len,     62);
-    cr_expect_str_eq(info->map,      "ctf_2fort");
-    cr_expect_eq(info->map_len,      9);
-    cr_expect_str_eq(info->folder,   "tf");
-    cr_expect_eq(info->folder_len,   2);
-    cr_expect_str_eq(info->game,     "\xE2\x96\x88\xE2\x96\x88 Skial \xE2\x96\x88\xE2\x96\x88");
-    cr_expect_eq(info->game_len,     19);
-    cr_expect_eq(info->id,           440);
-    cr_expect_eq(info->players,      27);
-    cr_expect_eq(info->max_players,  32);
-    cr_expect_eq(info->bots,         0);
-    cr_expect_eq(info->server_type,  A2S_SERVER_TYPE_DEDICATED);
-    cr_expect_eq(info->environment,  A2S_ENVIRONMENT_LINUX);
-    cr_expect(!info->visibility);
-    cr_expect(info->vac);
-    cr_expect_str_eq(info->version,  "6986594");
-    cr_expect_eq(info->version_len,  7);
-    cr_expect_eq(info->edf,          0xB1);
-    cr_expect_eq(info->port,         27015);
-    cr_expect_eq(info->steamid,      85568392920040230);
-    cr_expect_eq(info->stv_port,     0);
-    cr_expect_eq(info->stv_name,     NULL);
+    cr_expect_eq(info->protocol, 17);
+    cr_expect_str_eq(info->name, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01skial.com | PAYLOAD+ | US \xE2\x96\x88\xE2\x96\x88\xE2\x96\x88\xE2\x96\x88");
+    cr_expect_eq(info->name_len, 62);
+    cr_expect_str_eq(info->map, "pl_badwater_pro_v12_skial");
+    cr_expect_eq(info->map_len, 25);
+    cr_expect_str_eq(info->folder, "tf");
+    cr_expect_eq(info->folder_len, 2);
+    cr_expect_str_eq(info->game, "\xE2\x96\x88\xE2\x96\x88 Skial \xE2\x96\x88\xE2\x96\x88");
+    cr_expect_eq(info->game_len, 19);
+    cr_expect_eq(info->id, 440);
+    cr_expect_eq(info->players, 32);
+    cr_expect_eq(info->max_players, 32);
+    cr_expect_eq(info->bots, 0);
+    cr_expect_eq(info->server_type, A2S_SERVER_TYPE_DEDICATED);
+    cr_expect_eq(info->environment, A2S_ENVIRONMENT_LINUX);
+    cr_expect_eq(info->visibility, false);
+    cr_expect_eq(info->vac, true);
+    cr_expect_str_eq(info->version, "7182415");
+    cr_expect_eq(info->version_len, 7);
+    cr_expect_eq(info->edf, 0xB1);
+    cr_expect_eq(info->port, 27015);
+    cr_expect_eq(info->steamid, 85568392920040218);
+    cr_expect_eq(info->stv_port, 0);
+    cr_expect_eq(info->stv_name, NULL);
     cr_expect_eq(info->stv_name_len, 0);
-    cr_expect_str_eq(info->keywords, "skial,stats,free_items,free_unusuals,alltalk,ctf,increased_maxplayers,norespawntime");
-    cr_expect_eq(info->keywords_len, 83);
-    cr_expect_eq(info->gameid,       440);
+    cr_expect_str_eq(info->keywords, "skial,stats,free_items,free_unusuals,alltalk,increased_maxplayers,nocrits,norespawntime,payload");
+    cr_expect_eq(info->keywords_len, 95);
+    cr_expect_eq(info->gameid, 440);
 
     ssq_info_free(info);
+    free(datagram);
+    ssq_packet_free(packet);
+    free(response);
 }
 
-Test(a2s_info, bad_header, .description = "Invalid response header") {
-    const uint8_t bad_header = 0x00;
-
-    const uint8_t response[] = {
-        bad_header, 0x02, 0x67, 0x61, 0x6D, 0x65, 0x32, 0x78, 0x73, 0x2E, 0x63, 0x6F,
-        0x6D, 0x20, 0x43, 0x6F, 0x75, 0x6E, 0x74, 0x65, 0x72, 0x2D, 0x53, 0x74, 0x72,
-        0x69, 0x6B, 0x65, 0x20, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x23, 0x31,
-        0x00, 0x64, 0x65, 0x5F, 0x64, 0x75, 0x73, 0x74, 0x00, 0x63, 0x73, 0x74, 0x72,
-        0x69, 0x6B, 0x65, 0x00, 0x43, 0x6F, 0x75, 0x6E, 0x74, 0x65, 0x72, 0x2D, 0x53,
-        0x74, 0x72, 0x69, 0x6B, 0x65, 0x3A, 0x20, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65,
-        0x00, 0xF0, 0x00, 0x05, 0x10, 0x04, 0x64, 0x6C, 0x00, 0x00, 0x31, 0x2E, 0x30,
-        0x2E, 0x30, 0x2E, 0x32, 0x32, 0x00
-    };
-
-    const size_t response_len = sizeof (response);
+Test(a2s_info, bad_header) {
+    size_t   datagram_len;
+    uint8_t *datagram = read_datagram("dgram/chall/example_0.bin", &datagram_len);
 
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
-    A2S_INFO *const info = ssq_info_deserialize(response, response_len, &err);
+    SSQ_PACKET *packet = ssq_packet_from_datagram(datagram, datagram_len, &err);
 
-    cr_expect_eq(err.code, SSQ_ERR_BADRES);
-    cr_expect_str_eq(err.message, "Invalid A2S_INFO response header");
-    cr_expect_eq(info, NULL);
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(packet, NULL);
+
+    size_t   response_len;
+    uint8_t *response = ssq_packets_to_response((const SSQ_PACKET *const *)(&packet), 1, &response_len, &err);
+
+    cr_assert_eq(err.code, SSQ_OK);
+    cr_assert_neq(response, NULL);
+
+    A2S_INFO *info = ssq_info_deserialize(response, response_len, &err);
+
+    cr_assert_eq(err.code, SSQ_ERR_BADRES);
+    cr_assert_str_eq(err.message, "Invalid A2S_INFO response header");
+    cr_assert_eq(info, NULL);
+
+    free(datagram);
+    ssq_packet_free(packet);
+    free(response);
 }

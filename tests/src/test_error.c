@@ -2,20 +2,17 @@
 #include <errno.h>
 #include "ssq/error.h"
 
-Test(error, set, .description = "Set error") {
+Test(error, set) {
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
-    const SSQ_ERROR_CODE code      = SSQ_ERR_BADRES;
-    const char           message[] = "Bad response";
-
-    ssq_error_set(&err, code, message);
+    ssq_error_set(&err, SSQ_ERR_BADRES, "Bad response");
 
     cr_expect_eq(err.code, SSQ_ERR_BADRES);
-    cr_expect_str_eq(err.message, message);
+    cr_expect_str_eq(err.message, "Bad response");
 }
 
-Test(error, set_from_errno, .description = "Set from errno") {
+Test(error, set_from_errno) {
     SSQ_ERROR err;
     ssq_error_clear(&err);
 
@@ -26,7 +23,7 @@ Test(error, set_from_errno, .description = "Set from errno") {
     cr_expect_str_not_empty(err.message);
 }
 
-Test(error, clear, .description = "Clear error") {
+Test(error, clear) {
     SSQ_ERROR err;
     ssq_error_set(&err, SSQ_ERR_BADRES, "Bad response");
 
