@@ -1,8 +1,4 @@
-/*
- * example.c
- *
- * Simple program to query the info, players and rules of a Source game server.
- */
+/* example.c -- Simple program to query the info, players and rules of a Source game server. */
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -84,6 +80,7 @@ int main(int argc, char *argv[]) {
 
     /* Cleanup */
     ssq_server_cleanup(&server);
+
 #ifdef _WIN32
     WSACleanup();
 #endif /* _WIN32 */
@@ -91,29 +88,19 @@ int main(int argc, char *argv[]) {
     exit(EXIT_SUCCESS);
 }
 
-static const char *server_type_to_str(const char server_type) {
-    switch (server_type) {
-        case A2S_SERVER_TYPE_DEDICATED:
-            return "dedicated";
-        case A2S_SERVER_TYPE_NON_DEDICATED:
-            return "non-dedicated";
-        case A2S_SERVER_TYPE_STV_RELAY:
-            return "SourceTV relay (proxy)";
-        default:
-            return "unknown";
-    }
-}
-
-static const char *environment_to_str(const char environment)  {
-    switch (environment) {
-        case A2S_ENVIRONMENT_LINUX: return "linux";
-        case A2S_ENVIRONMENT_WINDOWS: return "windows";
-        case A2S_ENVIRONMENT_MAC: return "mac";
-        default: return "unknown";
-    }
-}
-
 void ssq_info_print(const A2S_INFO *const info) {
+    static const char *server_type_names[] = {
+        [A2S_SERVER_TYPE_DEDICATED]     = "dedicated",
+        [A2S_SERVER_TYPE_NON_DEDICATED] = "non-dedicated",
+        [A2S_SERVER_TYPE_STV_RELAY]     = "SourceTV relay (proxy)",
+        [A2S_SERVER_TYPE_UNKNOWN]       = "?",
+    };
+    static const char *environment_names[] = {
+        [A2S_ENVIRONMENT_LINUX]   = "linux",
+        [A2S_ENVIRONMENT_WINDOWS] = "windows",
+        [A2S_ENVIRONMENT_MAC]     = "mac",
+        [A2S_ENVIRONMENT_UNKNOWN] = "?",
+    };
     printf("-----BEGIN INFO-----\n");
     printf("Protocol.......: %" PRIu8 "\n", info->protocol);
     printf("Name...........: %s\n", info->name);
@@ -122,9 +109,9 @@ void ssq_info_print(const A2S_INFO *const info) {
     printf("Game...........: %s\n", info->game);
     printf("ID.............: %" PRIu16 "\n", info->id);
     printf("Players........: %" PRIu8 "/%" PRIu8 " (%" PRIu8 " bots)\n",
-       info->players, info->max_players, info->bots);
-    printf("Server type....: %s\n", server_type_to_str(info->server_type));
-    printf("Environment....: %s\n", environment_to_str(info->environment));
+        info->players, info->max_players, info->bots);
+    printf("Server type....: %s\n", server_type_names[info->server_type]);
+    printf("Environment....: %s\n", environment_names[info->environment]);
     printf("Visibility.....: %s\n", (info->visibility ? "private" : "public"));
     printf("VAC............: %s\n", (info->vac ? "secured" : "unsecured"));
     printf("Version........: %s\n", info->version);
