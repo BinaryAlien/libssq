@@ -6,6 +6,7 @@
 #include "ssq/buf.h"
 #include "ssq/query.h"
 #include "ssq/response.h"
+#include "ssq/server/private.h"
 
 #define A2S_HEADER_RULES 0x56
 #define S2A_HEADER_RULES 0x45

@@ -1,6 +1,8 @@
 #ifndef SSQ_QUERY_H
 #define SSQ_QUERY_H
 
+#include <stddef.h>
+
 #include "ssq/server.h"
 
 #ifdef __cplusplus

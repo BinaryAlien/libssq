@@ -1,6 +1,8 @@
 #ifndef SSQ_A2S_INFO_H
 #define SSQ_A2S_INFO_H
 
+#include <stddef.h>
+
 #include "ssq/server.h"
 
 #define A2S_INFO_FLAG_GAMEID   0x01

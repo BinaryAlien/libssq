@@ -3,16 +3,15 @@
 #include <stdlib.h>
 
 #include "ssq/packet.h"
+#include "ssq/server/private.h"
 
-#ifdef _WIN32
-# include <winsock2.h>
-#else /* !_WIN32 */
+#ifndef _WIN32
 # include <unistd.h>
 # define INVALID_SOCKET (-1)
 # define SOCKET_ERROR   (-1)
 # define closesocket    close
 typedef int SOCKET;
-#endif /* _WIN32 */
+#endif /* !_WIN32 */
 
 static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
     SOCKET sockfd = INVALID_SOCKET;

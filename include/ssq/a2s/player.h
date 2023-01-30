@@ -1,6 +1,8 @@
 #ifndef SSQ_A2S_PLAYER_H
 #define SSQ_A2S_PLAYER_H
 
+#include <stddef.h>
+
 #include "ssq/server.h"
 
 #ifdef __cplusplus

@@ -1,8 +1,10 @@
 #include "ssq/server.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "ssq/helper.h"
+#include "ssq/server/private.h"
 
 static void prepare_udp_hints(struct addrinfo *hints) {
     memset(hints, 0, sizeof (*hints));
@@ -18,20 +20,23 @@ static int resolve_address(struct addrinfo **dest, const char hostname[], uint16
     return getaddrinfo(hostname, port_str, &hints, dest);
 }
 
-bool ssq_server_init(SSQ_SERVER *server, const char hostname[], uint16_t port) {
+SSQ_SERVER *ssq_server_new(const char hostname[], uint16_t port) {
+    SSQ_SERVER *server = malloc(sizeof (*server));
+    if (server == NULL)
+        return NULL;
+    server->addr_list = NULL;
+    ssq_server_err_clr(server);
+    ssq_server_timeout(server, SSQ_TIMEOUT_RECV, SSQ_TIMEOUT_RECV_DEFAULT);
+    ssq_server_timeout(server, SSQ_TIMEOUT_SEND, SSQ_TIMEOUT_SEND_DEFAULT);
     int gai_ecode = resolve_address(&server->addr_list, hostname, port);
-    if (gai_ecode == 0) {
-        ssq_server_err_clr(server);
-        ssq_server_timeout(server, SSQ_TIMEOUT_RECV, SSQ_SERVER_DEFAULT_TIMEOUT_RECV);
-        ssq_server_timeout(server, SSQ_TIMEOUT_SEND, SSQ_SERVER_DEFAULT_TIMEOUT_SEND);
-    } else {
+    if (gai_ecode != 0)
         ssq_error_set(&server->last_error, SSQE_GAI, gai_strerror(gai_ecode));
-    }
-    return ssq_server_ok(server);
+    return server;
 }
 
-void ssq_server_cleanup(SSQ_SERVER *server) {
+void ssq_server_free(SSQ_SERVER *server) {
     freeaddrinfo(server->addr_list);
+    free(server);
 }
 
 #ifdef _WIN32
