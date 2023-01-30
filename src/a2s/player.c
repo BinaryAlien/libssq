@@ -40,7 +40,7 @@ static uint8_t *ssq_player_query(SSQ_SERVER *server, size_t *response_len) {
 
 static void ssq_player_deserialize_from_buf(SSQ_BUF *src, A2S_PLAYER *dest) {
     dest->index    = ssq_buf_read_uint8(src);
-    dest->name     = ssq_buf_read_string(src, &(dest->name_len));
+    dest->name     = ssq_buf_read_string(src, &dest->name_len);
     dest->score    = ssq_buf_read_int32(src);
     dest->duration = ssq_buf_read_float(src);
 }
@@ -75,7 +75,7 @@ A2S_PLAYER *ssq_player(SSQ_SERVER *server, uint8_t *player_count) {
     size_t response_len;
     uint8_t *response = ssq_player_query(server, &response_len);
     if (ssq_server_ok(server)) {
-        players = ssq_player_deserialize(response, response_len, player_count, &(server->last_error));
+        players = ssq_player_deserialize(response, response_len, player_count, &server->last_error);
         free(response);
     }
     return players;

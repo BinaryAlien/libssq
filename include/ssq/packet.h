@@ -18,13 +18,13 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct ssq_packet {
-    int32_t  header;      /** The packet's header.                            */
-    int32_t  id;          /** Unique number assigned by server per answer.    */
-    uint8_t  total;       /** The total number of packets in the response.    */
-    uint8_t  number;      /** The number of the packet.                       */
-    uint16_t size;        /** Maximum size of packet before switching occurs. */
-    uint8_t *payload;     /** The packet's payload.                           */
-    size_t   payload_len; /** Length of the packet's payload.                 */
+    int32_t  header;      /* The packet's header.                            */
+    int32_t  id;          /* Unique number assigned by server per answer.    */
+    uint8_t  total;       /* The total number of packets in the response.    */
+    uint8_t  number;      /* The number of the packet.                       */
+    uint16_t size;        /* Maximum size of packet before switching occurs. */
+    uint8_t *payload;     /* The packet's payload.                           */
+    size_t   payload_len; /* Length of the packet's payload.                 */
 } SSQ_PACKET;
 
 SSQ_PACKET *ssq_packet_from_datagram(const uint8_t *datagram, uint16_t datagram_len, SSQ_ERROR *err);

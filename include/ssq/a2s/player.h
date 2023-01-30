@@ -8,11 +8,11 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct a2s_player {
-    uint8_t index;    /** Index of player chunk starting from 0.                     */
-    char   *name;     /** Name of the player.                                        */
-    size_t  name_len; /** Length of the `name' string.                               */
-    int32_t score;    /** Player's score (usually "frags" or "kills").               */
-    float   duration; /** Time (in seconds) player has been connected to the server. */
+    uint8_t index;    /* Index of player chunk starting from 0.                     */
+    char   *name;     /* Name of the player.                                        */
+    size_t  name_len; /* Length of the `name' string.                               */
+    int32_t score;    /* Player's score (usually "frags" or "kills").               */
+    float   duration; /* Time (in seconds) player has been connected to the server. */
 } A2S_PLAYER;
 
 A2S_PLAYER *ssq_player(SSQ_SERVER *server, uint8_t *player_count);

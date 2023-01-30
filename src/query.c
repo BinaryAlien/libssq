@@ -28,18 +28,18 @@ static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
         }
     }
     if (sockfd != INVALID_SOCKET) {
-        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&(server->timeout.recv), sizeof (server->timeout.recv)) == SOCKET_ERROR ||
-            setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&(server->timeout.send), sizeof (server->timeout.send)) == SOCKET_ERROR) {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&server->timeout.recv, sizeof (server->timeout.recv)) == SOCKET_ERROR ||
+            setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&server->timeout.send, sizeof (server->timeout.send)) == SOCKET_ERROR) {
 #ifdef _WIN32
-            ssq_error_set_from_wsa(&(server->last_error));
+            ssq_error_set_from_wsa(&server->last_error);
 #else /* !_WIN32 */
-            ssq_error_set_from_errno(&(server->last_error));
+            ssq_error_set_from_errno(&server->last_error);
 #endif /* _WIN32 */
             closesocket(sockfd);
             sockfd = INVALID_SOCKET;
         }
     } else {
-        ssq_error_set(&(server->last_error), SSQE_NO_SOCKET, "Could not create a socket");
+        ssq_error_set(&server->last_error, SSQE_NO_SOCKET, "Could not create a socket");
     }
     return sockfd;
 }
@@ -99,18 +99,18 @@ uint8_t *ssq_query(SSQ_SERVER *server, const uint8_t payload[], size_t payload_l
     SOCKET sockfd = ssq_query_init_socket(server);
     if (!ssq_server_ok(server))
         return NULL;
-    ssq_query_send(sockfd, payload, payload_len, &(server->last_error));
+    ssq_query_send(sockfd, payload, payload_len, &server->last_error);
     if (!ssq_server_ok(server))
         goto end;
     uint8_t packet_count = 0;
-    SSQ_PACKET **packets = ssq_query_recv(sockfd, &packet_count, &(server->last_error));
+    SSQ_PACKET **packets = ssq_query_recv(sockfd, &packet_count, &server->last_error);
     if (!ssq_server_ok(server))
         goto end;
     const SSQ_PACKET *const *packets_readonly = (const SSQ_PACKET *const *)packets;
     if (ssq_packets_check_integrity(packets_readonly, packet_count))
-        response = ssq_packets_to_response(packets_readonly, packet_count, response_len, &(server->last_error));
+        response = ssq_packets_to_response(packets_readonly, packet_count, response_len, &server->last_error);
     else
-        ssq_error_set(&(server->last_error), SSQE_INVALID_RESPONSE, "Packet ID mismatch");
+        ssq_error_set(&server->last_error, SSQE_INVALID_RESPONSE, "Packet ID mismatch");
     ssq_packets_free(packets, packet_count);
 end:
     closesocket(sockfd);

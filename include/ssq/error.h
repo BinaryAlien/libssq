@@ -14,7 +14,7 @@ typedef enum ssq_error_code {
     SSQE_INVALID_RESPONSE = 2,
     SSQE_UNSUPPORTED      = 3,
     SSQE_GAI              = 4,
-    SSQE_NO_SOCKET        = 5
+    SSQE_NO_SOCKET        = 5,
 } SSQ_ERROR_CODE;
 
 typedef struct ssq_error {

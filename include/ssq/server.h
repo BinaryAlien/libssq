@@ -40,7 +40,7 @@ typedef struct ssq_server {
 
 typedef enum ssq_timeout_selector {
     SSQ_TIMEOUT_RECV = 0x1,
-    SSQ_TIMEOUT_SEND = 0x2
+    SSQ_TIMEOUT_SEND = 0x2,
 } SSQ_TIMEOUT_SELECTOR;
 
 bool           ssq_server_init(SSQ_SERVER *server, const char *hostname, uint16_t port);
