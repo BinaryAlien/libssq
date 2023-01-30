@@ -1,3 +1,5 @@
+/* query.h -- Server query routine. */
+
 #ifndef SSQ_QUERY_H
 #define SSQ_QUERY_H
 

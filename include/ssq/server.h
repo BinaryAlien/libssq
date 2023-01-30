@@ -24,10 +24,10 @@ void           ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which
 void           ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, time_t value_in_ms);
 #endif /* _WIN32 */
 
-bool           ssq_server_ok(const SSQ_SERVER *server);
-SSQ_ERROR_CODE ssq_server_err_code(const SSQ_SERVER *server);
-const char    *ssq_server_err_msg(const SSQ_SERVER *server);
-void           ssq_server_err_clr(SSQ_SERVER *server);
+bool           ssq_server_eok(const SSQ_SERVER *server);
+SSQ_ERROR_CODE ssq_server_ecode(const SSQ_SERVER *server);
+const char    *ssq_server_emsg(const SSQ_SERVER *server);
+void           ssq_server_eclr(SSQ_SERVER *server);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@ SSQ_SERVER *ssq_server_new(const char hostname[], uint16_t port) {
     if (server == NULL)
         return NULL;
     server->addr_list = NULL;
-    ssq_server_err_clr(server);
+    ssq_server_eclr(server);
     ssq_server_timeout(server, SSQ_TIMEOUT_RECV, SSQ_TIMEOUT_RECV_DEFAULT);
     ssq_server_timeout(server, SSQ_TIMEOUT_SEND, SSQ_TIMEOUT_SEND_DEFAULT);
     int gai_ecode = resolve_address(&server->addr_list, hostname, port);
@@ -49,17 +49,17 @@ void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, DWORD va
 #else /* !_WIN32 */
 void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, time_t value_in_ms) {
     if (which & SSQ_TIMEOUT_RECV)
-        ssq_helper_fill_timeval(value_in_ms, &server->timeout.recv);
+        ssq_helper_millis_to_timeval(value_in_ms, &server->timeout.recv);
     if (which & SSQ_TIMEOUT_SEND)
-        ssq_helper_fill_timeval(value_in_ms, &server->timeout.send);
+        ssq_helper_millis_to_timeval(value_in_ms, &server->timeout.send);
 }
 #endif /* _WIN32 */
 
-bool           ssq_server_ok(const SSQ_SERVER *server) { return ssq_server_err_code(server) == SSQE_OK; }
-SSQ_ERROR_CODE ssq_server_err_code(const SSQ_SERVER *server) { return server->last_error.code; }
-const char    *ssq_server_err_msg(const SSQ_SERVER *server) { return server->last_error.message; }
+bool           ssq_server_eok(const SSQ_SERVER *server) { return ssq_server_ecode(server) == SSQE_OK; }
+SSQ_ERROR_CODE ssq_server_ecode(const SSQ_SERVER *server) { return server->last_error.code; }
+const char    *ssq_server_emsg(const SSQ_SERVER *server) { return server->last_error.message; }
 
-void ssq_server_err_clr(SSQ_SERVER *server) {
+void ssq_server_eclr(SSQ_SERVER *server) {
     server->last_error.code = SSQE_OK;
     server->last_error.message[0] = '\0';
 }

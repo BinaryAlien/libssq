@@ -3,47 +3,47 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ssq/buf.h"
 #include "ssq/helper.h"
+#include "ssq/stream.h"
 
-static void ssq_packet_init_payload(SSQ_PACKET *dest, SSQ_BUF *src, SSQ_ERROR *err) {
-    dest->payload = malloc(dest->payload_len);
-    if (dest->payload != NULL)
-        ssq_buf_read(dest->payload, src, dest->payload_len);
+static void ssq_packet_init_payload(SSQ_PACKET *packet, SSQ_STREAM *stream, SSQ_ERROR *err) {
+    packet->payload = malloc(packet->payload_len);
+    if (packet->payload != NULL)
+        ssq_stream_read(stream, packet->payload, packet->payload_len);
     else
         ssq_error_set_from_errno(err);
 }
 
-static void ssq_packet_init_single(SSQ_PACKET *dest, SSQ_BUF *src, SSQ_ERROR *err) {
-    dest->total       = 1;
-    dest->number      = 0;
-    dest->payload_len = src->size - src->cursor;
-    ssq_packet_init_payload(dest, src, err);
+static void ssq_packet_init_single(SSQ_PACKET *packet, SSQ_STREAM *stream, SSQ_ERROR *err) {
+    packet->total       = 1;
+    packet->number      = 0;
+    packet->payload_len = ssq_stream_remaining(stream);
+    ssq_packet_init_payload(packet, stream, err);
 }
 
-static void ssq_packet_init_multi(SSQ_PACKET *dest, SSQ_BUF *src, SSQ_ERROR *err) {
-    dest->id          = ssq_buf_read_int32(src);
-    dest->total       = ssq_buf_read_uint8(src);
-    dest->number      = ssq_buf_read_uint8(src);
-    dest->size        = ssq_buf_read_uint16(src);
-    dest->payload_len = ssq_helper_minz(dest->size, ssq_buf_available(src));
-    if (dest->id & SSQ_PACKET_FLAG_COMPRESSION)
+static void ssq_packet_init_multi(SSQ_PACKET *packet, SSQ_STREAM *stream, SSQ_ERROR *err) {
+    packet->id          = ssq_stream_read_int32_t(stream);
+    packet->total       = ssq_stream_read_uint8_t(stream);
+    packet->number      = ssq_stream_read_uint8_t(stream);
+    packet->size        = ssq_stream_read_uint16_t(stream);
+    packet->payload_len = ssq_helper_minz(packet->size, ssq_stream_remaining(stream));
+    if (packet->id & SSQ_PACKET_FLAG_COMPRESSION)
         ssq_error_set(err, SSQE_UNSUPPORTED, "Cannot process packet: decompression is not supported");
     else
-        ssq_packet_init_payload(dest, src, err);
+        ssq_packet_init_payload(packet, stream, err);
 }
 
 SSQ_PACKET *ssq_packet_from_datagram(const uint8_t datagram[], uint16_t datagram_len, SSQ_ERROR *err) {
     SSQ_PACKET *packet = malloc(sizeof (*packet));
     if (packet != NULL) {
         memset(packet, 0, sizeof (*packet));
-        SSQ_BUF datagram_buf;
-        ssq_buf_init(&datagram_buf, datagram, datagram_len);
-        packet->header = ssq_buf_read_int32(&datagram_buf);
+        SSQ_STREAM datagram_stream;
+        ssq_stream_wrap(&datagram_stream, datagram, datagram_len);
+        packet->header = ssq_stream_read_int32_t(&datagram_stream);
         if (packet->header == SSQ_PACKET_HEADER_SINGLE)
-            ssq_packet_init_single(packet, &datagram_buf, err);
+            ssq_packet_init_single(packet, &datagram_stream, err);
         else if (packet->header == SSQ_PACKET_HEADER_MULTI)
-            ssq_packet_init_multi(packet, &datagram_buf, err);
+            ssq_packet_init_multi(packet, &datagram_stream, err);
         else
             ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid packet header");
         if (err->code != SSQE_OK) {
@@ -78,7 +78,8 @@ static size_t ssq_packets_payload_len_sum(const SSQ_PACKET *const packets[], uin
     return len;
 }
 
-uint8_t *ssq_packets_to_response(const SSQ_PACKET *const packets[], uint8_t packet_count, size_t *response_len, SSQ_ERROR *err) {
+uint8_t *ssq_packets_to_response(const SSQ_PACKET *const packets[], uint8_t packet_count,
+                                 size_t *response_len, SSQ_ERROR *err) {
     *response_len = ssq_packets_payload_len_sum(packets, packet_count);
     uint8_t *response = malloc(*response_len);
     if (response != NULL) {

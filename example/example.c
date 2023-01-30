@@ -42,8 +42,8 @@ int main(int argc, char *argv[]) {
     if (server == NULL) {
         fprintf(stderr, "ssq_server_new: memory exhausted\n");
         exit(EXIT_FAILURE);
-    } else if (!ssq_server_ok(server)) {
-        fprintf(stderr, "ssq_server_new: %s: %s\n", hostname, ssq_server_err_msg(server));
+    } else if (!ssq_server_eok(server)) {
+        fprintf(stderr, "ssq_server_new: %s: %s\n", hostname, ssq_server_emsg(server));
         ssq_server_free(server);
         exit(EXIT_FAILURE);
     }
@@ -51,34 +51,34 @@ int main(int argc, char *argv[]) {
 
     /* A2S_INFO */
     A2S_INFO *info = ssq_info(server);
-    if (ssq_server_ok(server)) {
+    if (ssq_server_eok(server)) {
         ssq_info_print(info);
         ssq_info_free(info);
     } else {
-        fprintf(stderr, "ssq_info: %s\n", ssq_server_err_msg(server));
-        ssq_server_err_clr(server);
+        fprintf(stderr, "ssq_info: %s\n", ssq_server_emsg(server));
+        ssq_server_eclr(server);
     }
 
     /* A2S_PLAYER */
     uint8_t player_count = 0;
     A2S_PLAYER *players = ssq_player(server, &player_count);
-    if (ssq_server_ok(server)) {
+    if (ssq_server_eok(server)) {
         ssq_player_print(players, player_count);
         ssq_player_free(players, player_count);
     } else {
-        fprintf(stderr, "ssq_player: %s\n", ssq_server_err_msg(server));
-        ssq_server_err_clr(server);
+        fprintf(stderr, "ssq_player: %s\n", ssq_server_emsg(server));
+        ssq_server_eclr(server);
     }
 
     /* A2S_RULES */
     uint16_t rule_count = 0;
     A2S_RULES *rules = ssq_rules(server, &rule_count);
-    if (ssq_server_ok(server)) {
+    if (ssq_server_eok(server)) {
         ssq_rules_print(rules, rule_count);
         ssq_rules_free(rules, rule_count);
     } else {
-        fprintf(stderr, "ssq_rules: %s\n", ssq_server_err_msg(server));
-        ssq_server_err_clr(server);
+        fprintf(stderr, "ssq_rules: %s\n", ssq_server_emsg(server));
+        ssq_server_eclr(server);
     }
 
     /* Cleanup */

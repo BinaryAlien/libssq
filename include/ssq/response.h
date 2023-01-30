@@ -1,3 +1,5 @@
+/* response.h -- Query response utility. */
+
 #ifndef SSQ_RESPONSE_H
 #define SSQ_RESPONSE_H
 

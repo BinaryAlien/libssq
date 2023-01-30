@@ -18,7 +18,7 @@ void ssq_error_set_from_errno(SSQ_ERROR *err) {
     err->code = SSQE_SYSTEM;
 #ifdef _WIN32
     strerror_s(err->message, SSQ_ERROR_MESSAGE_SIZE, errno);
-#else  /* !_WIN32 */
+#else /* !_WIN32 */
     strerror_r(errno, err->message, SSQ_ERROR_MESSAGE_SIZE);
 #endif /* _WIN32 */
 }

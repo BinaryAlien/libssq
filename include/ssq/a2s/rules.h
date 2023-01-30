@@ -1,3 +1,5 @@
+/* rules.h -- A2S_RULES server queries. */
+
 #ifndef SSQ_A2S_RULES_H
 #define SSQ_A2S_RULES_H
 

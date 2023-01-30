@@ -15,10 +15,10 @@ add_library(ssq STATIC
     src/a2s/info.c
     src/a2s/player.c
     src/a2s/rules.c
-    src/buf.c
     src/error.c
     src/packet.c
     src/query.c
     src/response.c
     src/server.c
+    src/stream.c
 )

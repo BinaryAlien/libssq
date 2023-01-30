@@ -1,3 +1,5 @@
+/** info.h -- A2S_INFO server queries. */
+
 #ifndef SSQ_A2S_INFO_H
 #define SSQ_A2S_INFO_H
 

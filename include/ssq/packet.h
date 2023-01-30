@@ -1,9 +1,12 @@
+/* packet.h -- Representation of a Source server packet. */
+
 #ifndef SSQ_PACKET_H
 #define SSQ_PACKET_H
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include "ssq/error.h"
 
 #define SSQ_PACKET_SIZE 1400
@@ -30,7 +33,7 @@ typedef struct ssq_packet {
 SSQ_PACKET *ssq_packet_from_datagram(const uint8_t *datagram, uint16_t datagram_len, SSQ_ERROR *err);
 void        ssq_packet_free(SSQ_PACKET *packet);
 
-bool        ssq_packets_check_integrity(const SSQ_PACKET *const *packets, const uint8_t packet_count);
+bool        ssq_packets_check_integrity(const SSQ_PACKET *const *packets, uint8_t packet_count);
 uint8_t    *ssq_packets_to_response(const SSQ_PACKET *const *packets, uint8_t packet_count, size_t *response_len, SSQ_ERROR *err);
 void        ssq_packets_free(SSQ_PACKET **packets, uint8_t packet_count);
 

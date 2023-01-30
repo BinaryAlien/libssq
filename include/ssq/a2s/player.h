@@ -1,3 +1,5 @@
+/* player.h -- A2S_PLAYER server queries. */
+
 #ifndef SSQ_A2S_PLAYER_H
 #define SSQ_A2S_PLAYER_H
 

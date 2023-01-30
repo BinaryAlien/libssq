@@ -1,3 +1,5 @@
+/* error.h -- Error information. */
+
 #ifndef SSQ_ERROR_H
 #define SSQ_ERROR_H
 
@@ -9,12 +11,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef enum ssq_error_code {
-    SSQE_OK               = 0,
-    SSQE_SYSTEM           = 1,
-    SSQE_INVALID_RESPONSE = 2,
-    SSQE_UNSUPPORTED      = 3,
-    SSQE_GAI              = 4,
-    SSQE_NO_SOCKET        = 5,
+    SSQE_OK = 0,
+    SSQE_SYSTEM,
+    SSQE_INVALID_RESPONSE,
+    SSQE_UNSUPPORTED,
+    SSQE_GAI,
+    SSQE_NO_SOCKET,
 } SSQ_ERROR_CODE;
 
 typedef struct ssq_error {

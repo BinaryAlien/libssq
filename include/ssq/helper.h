@@ -1,3 +1,5 @@
+/* helper.h -- Utility functions. */
+
 #ifndef SSQ_HELPER_H
 #define SSQ_HELPER_H
 
@@ -13,11 +15,11 @@
 #define SSQ_PORT_LEN  5
 #define SSQ_PORT_SIZE (SSQ_PORT_LEN + 1)
 
-static inline size_t ssq_helper_minz(const size_t x, const size_t y) {
+static inline size_t ssq_helper_minz(size_t x, size_t y) {
     return (x < y) ? x : y;
 }
 
-static inline void ssq_helper_strncpy(char dest[], const char src[], const size_t len) {
+static inline void ssq_helper_strncpy(char dest[], const char src[], size_t len) {
 #ifdef _WIN32
     strncpy_s(dest, len + 1, src, len);
 #else /* !_WIN32 */
@@ -25,7 +27,7 @@ static inline void ssq_helper_strncpy(char dest[], const char src[], const size_
 #endif /* _WIN32 */
 }
 
-static inline int ssq_helper_port_to_str(const uint16_t port, char port_str[SSQ_PORT_SIZE]) {
+static inline int ssq_helper_port_to_str(uint16_t port, char port_str[SSQ_PORT_SIZE]) {
 #ifdef _WIN32
     return sprintf_s(port_str, SSQ_PORT_SIZE, "%" PRIu16, port);
 #else /* !_WIN32 */
@@ -34,7 +36,7 @@ static inline int ssq_helper_port_to_str(const uint16_t port, char port_str[SSQ_
 }
 
 #ifndef _WIN32
-static inline void ssq_helper_fill_timeval(const time_t value_in_ms, struct timeval *const tv) {
+static inline void ssq_helper_millis_to_timeval(time_t value_in_ms, struct timeval *tv) {
     tv->tv_sec = value_in_ms / 1000;
     tv->tv_usec = value_in_ms % 1000 * 1000;
 }
