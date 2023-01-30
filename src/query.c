@@ -86,6 +86,7 @@ static SSQ_PACKET **ssq_query_recv(SOCKET sockfd, uint8_t *packet_count, SSQ_ERR
             *packet_count = packet->total;
             packets = calloc(*packet_count, sizeof (*packets));
             if (packets == NULL) {
+                ssq_packet_free(packet);
                 ssq_error_set_from_errno(err);
                 break;
             }
