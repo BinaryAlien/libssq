@@ -21,7 +21,7 @@ To quickly get started, check out the [example program](https://github.com/Binar
 
 ## Build
 
-This project comes with a `CMakeLists.txt` in order to generate a build system to compile the library on your operating system using [CMake](https://cmake.org/).
+This project comes with a `CMakeLists.txt` to use with [CMake](https://cmake.org/) in order to generate a build system to compile the library on your machine.
 
 ### Example
 
@@ -31,17 +31,13 @@ $ pwd
 ~/libssq
 $ mkdir build
 $ cd build
-$ cmake ..          # Generate the build system
-$ cmake --build .   # Build the library
-$ 
+$ cmake ..        # Generate the build system
+$ cmake --build . # Build the library
 ```
 
 * Compiling the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c) using [GCC](https://gcc.gnu.org/) from the root of the repository.
 ```sh
-$ pwd
-~/libssq
 $ gcc -std=c99 -Iinclude -o ssq example/example.c -Lbuild -lssq
 $ ./ssq
 usage: ./ssq hostname [port]
-$ 
 ```
