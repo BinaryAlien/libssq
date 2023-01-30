@@ -47,38 +47,35 @@ static void ssq_player_deserialize_from_stream(SSQ_STREAM *src, A2S_PLAYER *dest
 }
 
 A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len, uint8_t *player_count, SSQ_ERROR *err) {
-    A2S_PLAYER *players = NULL;
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
     if (ssq_response_is_truncated(response, response_len))
         ssq_stream_advance(&stream, 4);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
-    if (response_header == S2A_HEADER_PLAYER) {
-        *player_count = ssq_stream_read_uint8_t(&stream);
-        if (*player_count != 0) {
-            players = calloc(*player_count, sizeof (*players));
-            if (players != NULL) {
-                for (uint8_t i = 0; i < *player_count; ++i) {
-                    ssq_player_deserialize_from_stream(&stream, players + i);
-                }
-            } else {
-                ssq_error_set_from_errno(err);
-            }
-        }
-    } else {
+    if (response_header != S2A_HEADER_PLAYER) {
         ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid A2S_PLAYER response header");
+        return NULL;
     }
+    *player_count = ssq_stream_read_uint8_t(&stream);
+    if (*player_count == 0)
+        return NULL;
+    A2S_PLAYER *players = calloc(*player_count, sizeof (*players));
+    if (players == NULL) {
+        ssq_error_set_from_errno(err);
+        return NULL;
+    }
+    for (uint8_t i = 0; i < *player_count; ++i)
+        ssq_player_deserialize_from_stream(&stream, players + i);
     return players;
 }
 
 A2S_PLAYER *ssq_player(SSQ_SERVER *server, uint8_t *player_count) {
-    A2S_PLAYER *players = NULL;
     size_t response_len;
     uint8_t *response = ssq_player_query(server, &response_len);
-    if (response != NULL) {
-        players = ssq_player_deserialize(response, response_len, player_count, &server->last_error);
-        free(response);
-    }
+    if (response == NULL)
+        return NULL;
+    A2S_PLAYER *players = ssq_player_deserialize(response, response_len, player_count, &server->last_error);
+    free(response);
     return players;
 }
 

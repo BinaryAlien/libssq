@@ -76,52 +76,50 @@ static void ssq_info_deserialize_from_stream(SSQ_STREAM *src, A2S_INFO *dest) {
     dest->visibility  = ssq_stream_read_bool(src);
     dest->vac         = ssq_stream_read_bool(src);
     dest->version     = ssq_stream_read_string(src, &dest->version_len);
-    if (!ssq_stream_end(src)) {
-        dest->edf = ssq_stream_read_uint8_t(src);
-        if (dest->edf & A2S_INFO_FLAG_PORT)
-            dest->port = ssq_stream_read_uint16_t(src);
-        if (dest->edf & A2S_INFO_FLAG_STEAMID)
-            dest->steamid = ssq_stream_read_uint64_t(src);
-        if (dest->edf & A2S_INFO_FLAG_STV) {
-            dest->stv_port = ssq_stream_read_uint16_t(src);
-            dest->stv_name = ssq_stream_read_string(src, &dest->stv_name_len);
-        }
-        if (dest->edf & A2S_INFO_FLAG_KEYWORDS)
-            dest->keywords = ssq_stream_read_string(src, &dest->keywords_len);
-        if (dest->edf & A2S_INFO_FLAG_GAMEID)
-            dest->gameid = ssq_stream_read_uint64_t(src);
+    if (ssq_stream_end(src))
+        return;
+    dest->edf = ssq_stream_read_uint8_t(src);
+    if (dest->edf & A2S_INFO_FLAG_PORT)
+        dest->port = ssq_stream_read_uint16_t(src);
+    if (dest->edf & A2S_INFO_FLAG_STEAMID)
+        dest->steamid = ssq_stream_read_uint64_t(src);
+    if (dest->edf & A2S_INFO_FLAG_STV) {
+        dest->stv_port = ssq_stream_read_uint16_t(src);
+        dest->stv_name = ssq_stream_read_string(src, &dest->stv_name_len);
     }
+    if (dest->edf & A2S_INFO_FLAG_KEYWORDS)
+        dest->keywords = ssq_stream_read_string(src, &dest->keywords_len);
+    if (dest->edf & A2S_INFO_FLAG_GAMEID)
+        dest->gameid = ssq_stream_read_uint64_t(src);
 }
 
 A2S_INFO *ssq_info_deserialize(const uint8_t payload[], size_t payload_len, SSQ_ERROR *err) {
-    A2S_INFO *info = NULL;
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, payload, payload_len);
     if (ssq_response_is_truncated(payload, payload_len))
         ssq_stream_advance(&stream, 4);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
-    if (response_header == S2A_HEADER_INFO) {
-        info = malloc(sizeof (*info));
-        if (info != NULL) {
-            memset(info, 0, sizeof (*info));
-            ssq_info_deserialize_from_stream(&stream, info);
-        } else {
-            ssq_error_set_from_errno(err);
-        }
-    } else {
+    if (response_header != S2A_HEADER_INFO) {
         ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid A2S_INFO response header");
+        return NULL;
     }
+    A2S_INFO *info = malloc(sizeof (*info));
+    if (info == NULL) {
+        ssq_error_set_from_errno(err);
+        return NULL;
+    }
+    memset(info, 0, sizeof (*info));
+    ssq_info_deserialize_from_stream(&stream, info);
     return info;
 }
 
 A2S_INFO *ssq_info(SSQ_SERVER *server) {
-    A2S_INFO *info = NULL;
     size_t response_len;
     uint8_t *response = ssq_info_query(server, &response_len);
-    if (response != NULL) {
-        info = ssq_info_deserialize(response, response_len, &server->last_error);
-        free(response);
-    }
+    if (response == NULL)
+        return NULL;
+    A2S_INFO *info = ssq_info_deserialize(response, response_len, &server->last_error);
+    free(response);
     return info;
 }
 

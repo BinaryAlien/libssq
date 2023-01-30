@@ -45,38 +45,35 @@ static void ssq_rules_deserialize_from_stream(SSQ_STREAM *src, A2S_RULES *dest) 
 }
 
 A2S_RULES *ssq_rules_deserialize(const uint8_t response[], size_t response_len, uint16_t *rule_count, SSQ_ERROR *err) {
-    A2S_RULES *rules = NULL;
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
     if (ssq_response_is_truncated(response, response_len))
         ssq_stream_advance(&stream, 4);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
-    if (response_header == S2A_HEADER_RULES) {
-        *rule_count = ssq_stream_read_uint16_t(&stream);
-        if (*rule_count != 0) {
-            rules = calloc(*rule_count, sizeof (*rules));
-            if (rules != NULL) {
-                for (uint16_t i = 0; i < *rule_count; ++i) {
-                    ssq_rules_deserialize_from_stream(&stream, rules + i);
-                }
-            } else {
-                ssq_error_set_from_errno(err);
-            }
-        }
-    } else {
+    if (response_header != S2A_HEADER_RULES) {
         ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid A2S_RULES response header");
+        return NULL;
     }
+    *rule_count = ssq_stream_read_uint16_t(&stream);
+    if (*rule_count == 0)
+        return NULL;
+    A2S_RULES *rules = calloc(*rule_count, sizeof (*rules));
+    if (rules == NULL) {
+        ssq_error_set_from_errno(err);
+        return NULL;
+    }
+    for (uint16_t i = 0; i < *rule_count; ++i)
+        ssq_rules_deserialize_from_stream(&stream, rules + i);
     return rules;
 }
 
 A2S_RULES *ssq_rules(SSQ_SERVER *server, uint16_t *rule_count) {
-    A2S_RULES *rules = NULL;
     size_t response_len;
     uint8_t *response = ssq_rules_query(server, &response_len);
-    if (response != NULL) {
-        rules = ssq_rules_deserialize(response, response_len, rule_count, &server->last_error);
-        free(response);
-    }
+    if (response == NULL)
+        return NULL;
+    A2S_RULES *rules = ssq_rules_deserialize(response, response_len, rule_count, &server->last_error);
+    free(response);
     return rules;
 }
 

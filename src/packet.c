@@ -35,24 +35,24 @@ static void ssq_packet_init_multi(SSQ_PACKET *packet, SSQ_STREAM *stream, SSQ_ER
 
 SSQ_PACKET *ssq_packet_from_datagram(const uint8_t datagram[], uint16_t datagram_len, SSQ_ERROR *err) {
     SSQ_PACKET *packet = malloc(sizeof (*packet));
-    if (packet != NULL) {
-        memset(packet, 0, sizeof (*packet));
-        SSQ_STREAM datagram_stream;
-        ssq_stream_wrap(&datagram_stream, datagram, datagram_len);
-        packet->header = ssq_stream_read_int32_t(&datagram_stream);
-        if (packet->header == SSQ_PACKET_HEADER_SINGLE)
-            ssq_packet_init_single(packet, &datagram_stream, err);
-        else if (packet->header == SSQ_PACKET_HEADER_MULTI)
-            ssq_packet_init_multi(packet, &datagram_stream, err);
-        else
-            ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid packet header");
-        if (err->code != SSQE_OK) {
-            free(packet->payload);
-            free(packet);
-            packet = NULL;
-        }
-    } else {
+    if (packet == NULL) {
         ssq_error_set_from_errno(err);
+        return NULL;
+    }
+    memset(packet, 0, sizeof (*packet));
+    SSQ_STREAM datagram_stream;
+    ssq_stream_wrap(&datagram_stream, datagram, datagram_len);
+    packet->header = ssq_stream_read_int32_t(&datagram_stream);
+    if (packet->header == SSQ_PACKET_HEADER_SINGLE)
+        ssq_packet_init_single(packet, &datagram_stream, err);
+    else if (packet->header == SSQ_PACKET_HEADER_MULTI)
+        ssq_packet_init_multi(packet, &datagram_stream, err);
+    else
+        ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid packet header");
+    if (err->code != SSQE_OK) {
+        free(packet->payload);
+        free(packet);
+        packet = NULL;
     }
     return packet;
 }
@@ -82,14 +82,14 @@ uint8_t *ssq_packets_to_response(const SSQ_PACKET *const packets[], uint8_t pack
                                  size_t *response_len, SSQ_ERROR *err) {
     *response_len = ssq_packets_payload_len_sum(packets, packet_count);
     uint8_t *response = malloc(*response_len);
-    if (response != NULL) {
-        size_t copy_offset = 0;
-        for (uint8_t i = 0; i < packet_count; ++i) {
-            memcpy(response + copy_offset, packets[i]->payload, packets[i]->payload_len);
-            copy_offset += packets[i]->payload_len;
-        }
-    } else {
+    if (response == NULL) {
         ssq_error_set_from_errno(err);
+        return NULL;
+    }
+    size_t copy_offset = 0;
+    for (uint8_t i = 0; i < packet_count; ++i) {
+        memcpy(response + copy_offset, packets[i]->payload, packets[i]->payload_len);
+        copy_offset += packets[i]->payload_len;
     }
     return response;
 }
