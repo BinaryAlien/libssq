@@ -28,8 +28,8 @@ static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
         }
     }
     if (sockfd != INVALID_SOCKET) {
-        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&(server->timeout_recv), sizeof (server->timeout_recv)) == SOCKET_ERROR ||
-            setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&(server->timeout_send), sizeof (server->timeout_send)) == SOCKET_ERROR) {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&(server->timeout.recv), sizeof (server->timeout.recv)) == SOCKET_ERROR ||
+            setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&(server->timeout.send), sizeof (server->timeout.send)) == SOCKET_ERROR) {
 #ifdef _WIN32
             ssq_error_set_from_wsa(&(server->last_error));
 #else /* !_WIN32 */

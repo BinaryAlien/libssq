@@ -35,18 +35,18 @@ void ssq_server_cleanup(SSQ_SERVER *server) {
 }
 
 #ifdef _WIN32
-void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT which, DWORD value_in_ms) {
+void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, DWORD value_in_ms) {
     if (which & SSQ_TIMEOUT_RECV)
-        server->timeout_recv = value_in_ms;
+        server->timeout.recv = value_in_ms;
     if (which & SSQ_TIMEOUT_SEND)
-        server->timeout_send = value_in_ms;
+        server->timeout.send = value_in_ms;
 }
 #else /* !_WIN32 */
-void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT which, time_t value_in_ms) {
+void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, time_t value_in_ms) {
     if (which & SSQ_TIMEOUT_RECV)
-        ssq_helper_fill_timeval(value_in_ms, &(server->timeout_recv));
+        ssq_helper_fill_timeval(value_in_ms, &(server->timeout.recv));
     if (which & SSQ_TIMEOUT_SEND)
-        ssq_helper_fill_timeval(value_in_ms, &(server->timeout_send));
+        ssq_helper_fill_timeval(value_in_ms, &(server->timeout.send));
 }
 #endif /* _WIN32 */
 

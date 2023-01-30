@@ -22,30 +22,34 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct ssq_timeout {
+#ifdef _WIN32
+    DWORD            recv;
+    DWORD            send;
+#else /* !_WIN32 */
+    struct timeval   recv;
+    struct timeval   send;
+#endif /* _WIN32 */
+} SSQ_TIMEOUT;
+
 typedef struct ssq_server {
     struct addrinfo *addr_list;
     SSQ_ERROR        last_error;
-#ifdef _WIN32
-    DWORD            timeout_recv;
-    DWORD            timeout_send;
-#else /* !_WIN32 */
-    struct timeval   timeout_recv;
-    struct timeval   timeout_send;
-#endif /* _WIN32 */
+    SSQ_TIMEOUT      timeout;
 } SSQ_SERVER;
 
-typedef enum ssq_timeout {
+typedef enum ssq_timeout_selector {
     SSQ_TIMEOUT_RECV = 0x1,
     SSQ_TIMEOUT_SEND = 0x2
-} SSQ_TIMEOUT;
+} SSQ_TIMEOUT_SELECTOR;
 
 bool           ssq_server_init(SSQ_SERVER *server, const char *hostname, uint16_t port);
 void           ssq_server_cleanup(SSQ_SERVER *server);
 
 #ifdef _WIN32
-void           ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT which, DWORD value_in_ms);
+void           ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, DWORD value_in_ms);
 #else /* !_WIN32 */
-void           ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT which, time_t value_in_ms);
+void           ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, time_t value_in_ms);
 #endif /* _WIN32 */
 
 bool           ssq_server_ok(const SSQ_SERVER *server);
