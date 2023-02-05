@@ -30,11 +30,11 @@ typedef struct ssq_packet {
     size_t   payload_len; /* Length of the packet's payload.                 */
 } SSQ_PACKET;
 
-SSQ_PACKET *ssq_packet_from_datagram(const uint8_t *datagram, uint16_t datagram_len, SSQ_ERROR *err);
+SSQ_PACKET *ssq_packet_from_datagram(const uint8_t *datagram, uint16_t datagram_len, SSQ_ERROR *error);
 void        ssq_packet_free(SSQ_PACKET *packet);
 
 bool        ssq_packets_check_integrity(const SSQ_PACKET *const *packets, uint8_t packet_count);
-uint8_t    *ssq_packets_to_response(const SSQ_PACKET *const *packets, uint8_t packet_count, size_t *response_len, SSQ_ERROR *err);
+uint8_t    *ssq_packets_to_response(const SSQ_PACKET *const *packets, uint8_t packet_count, size_t *response_len, SSQ_ERROR *error);
 void        ssq_packets_free(SSQ_PACKET **packets, uint8_t packet_count);
 
 #ifdef __cplusplus

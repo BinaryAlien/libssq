@@ -44,14 +44,14 @@ static void ssq_rules_deserialize_from_stream(SSQ_STREAM *src, A2S_RULES *dest) 
     dest->value = ssq_stream_read_string(src, &dest->value_len);
 }
 
-A2S_RULES *ssq_rules_deserialize(const uint8_t response[], size_t response_len, uint16_t *rule_count, SSQ_ERROR *err) {
+A2S_RULES *ssq_rules_deserialize(const uint8_t response[], size_t response_len, uint16_t *rule_count, SSQ_ERROR *error) {
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
     if (ssq_response_is_truncated(response, response_len))
         ssq_stream_advance(&stream, 4);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
     if (response_header != S2A_HEADER_RULES) {
-        ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid A2S_RULES response header");
+        ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid A2S_RULES response header");
         return NULL;
     }
     *rule_count = ssq_stream_read_uint16_t(&stream);
@@ -59,7 +59,7 @@ A2S_RULES *ssq_rules_deserialize(const uint8_t response[], size_t response_len, 
         return NULL;
     A2S_RULES *rules = calloc(*rule_count, sizeof (*rules));
     if (rules == NULL) {
-        ssq_error_set_from_errno(err);
+        ssq_error_set_from_errno(error);
         return NULL;
     }
     for (uint16_t i = 0; i < *rule_count; ++i)
