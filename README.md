@@ -11,7 +11,7 @@ This library supports each of the three undeprecated A2S queries:
 
 It has **no dependencies** and is designed to cross-compile on both **Windows** and **UNIX-like** operating systems.
 
-However, it does **not** currently support **Goldsource** nor **compressed** responses.
+It does **not** currently support **Goldsource** nor **compressed** responses.
 
 ## Documentation
 
@@ -21,23 +21,23 @@ To quickly get started, check out the [example program](https://github.com/Binar
 
 ## Build
 
-This project comes with a `CMakeLists.txt` to use with [CMake](https://cmake.org/) in order to generate a build system to compile the library on your machine.
+This project uses the [CMake](https://cmake.org/) build system generator.
 
 ### Example
 
-* Compiling the library from the root of the repository using CMake.
+* Produce a **static** library from the root of the repository using CMake.
 ```sh
-$ pwd
-~/libssq
-$ mkdir build
-$ cd build
-$ cmake ..        # Generate the build system
-$ cmake --build . # Build the library
+cmake -B builddir
+cmake --build builddir
 ```
 
-* Compiling the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c) using [GCC](https://gcc.gnu.org/) from the root of the repository.
+* Produce a **dynamic** library from the root of the repository using CMake.
 ```sh
-$ gcc -std=c99 -Iinclude -o ssq example/example.c -Lbuild -lssq
-$ ./ssq
-usage: ./ssq hostname [port]
+cmake -B builddir -DBUILD_SHARED_LIBS=1
+cmake --build builddir
+```
+
+* (GNU/Linux) Compile the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c) using [GCC](https://gcc.gnu.org/).
+```sh
+gcc -std=c99 -Iinclude -o ssq example/example.c -Lbuilddir -lssq
 ```
