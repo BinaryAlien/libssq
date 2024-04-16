@@ -1,24 +1,22 @@
-cmake_minimum_required(VERSION 3.10)
-
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED True)
-
-if (UNIX)
-    add_definitions(-D_POSIX_C_SOURCE=200112L)
-endif (UNIX)
+cmake_minimum_required(VERSION 3.23)
 
 project(ssq VERSION 3.0.0)
+add_library(ssq)
 
-include_directories(include)
-
-add_library(ssq STATIC
-    src/a2s/info.c
-    src/a2s/player.c
-    src/a2s/rules.c
-    src/error.c
-    src/packet.c
-    src/query.c
-    src/response.c
-    src/server.c
-    src/stream.c
+set_target_properties(ssq PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    C_EXTENSIONS OFF
 )
+
+if (UNIX)
+    target_compile_definitions(ssq PRIVATE _POSIX_C_SOURCE=200112L)
+endif (UNIX)
+
+target_include_directories(ssq PUBLIC include)
+target_sources(ssq PUBLIC FILE_SET HEADERS BASE_DIRS include)
+
+add_subdirectory(src)
+add_subdirectory(include)
+
+install(TARGETS ssq LIBRARY FILE_SET HEADERS)
