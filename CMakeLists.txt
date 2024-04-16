@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(ssq VERSION 3.0.0)
+project(ssq VERSION 3.0.1)
 add_library(ssq)
 
 set_target_properties(ssq PROPERTIES
