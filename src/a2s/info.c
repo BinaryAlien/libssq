@@ -20,7 +20,7 @@
 
 static const uint8_t payload_template[A2S_INFO_PAYLOAD_LEN_WITH_CHALL] = {
     0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_INFO,
-    'S', 'o', 'u', 'r', 'c', 'e', ' ', 'E', 'n', 'g', 'i', 'n', 'e', ' ', 'Q', 'u', 'e', 'r', 'y', '\0'
+    'S', 'o', 'u', 'r', 'c', 'e', ' ', 'E', 'n', 'g', 'i', 'n', 'e', ' ', 'Q', 'u', 'e', 'r', 'y', '\0',
 };
 
 static inline void payload_init(uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL]) {
