@@ -42,11 +42,6 @@ static uint8_t *ssq_rules_query(SSQ_SERVER *server, size_t *response_len) {
     return response;
 }
 
-static void ssq_rules_deserialize_from_stream(SSQ_STREAM *src, A2S_RULES *dest) {
-    dest->name  = ssq_stream_read_string(src, &dest->name_len);
-    dest->value = ssq_stream_read_string(src, &dest->value_len);
-}
-
 A2S_RULES *ssq_rules_deserialize(const uint8_t response[], size_t response_len, uint16_t *rule_count, SSQ_ERROR *error) {
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
@@ -65,8 +60,10 @@ A2S_RULES *ssq_rules_deserialize(const uint8_t response[], size_t response_len, 
         ssq_error_set_from_errno(error);
         return NULL;
     }
-    for (uint16_t i = 0; i < *rule_count; ++i)
-        ssq_rules_deserialize_from_stream(&stream, rules + i);
+    for (uint16_t i = 0; i < *rule_count; ++i) {
+        rules[i].name  = ssq_stream_read_string(&stream, &rules[i].name_len);
+        rules[i].value = ssq_stream_read_string(&stream, &rules[i].value_len);
+    }
     return rules;
 }
 
