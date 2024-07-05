@@ -18,5 +18,6 @@ target_sources(ssq PUBLIC FILE_SET HEADERS BASE_DIRS include)
 
 add_subdirectory(src)
 add_subdirectory(include)
+add_subdirectory(tests)
 
 install(TARGETS ssq LIBRARY FILE_SET HEADERS)

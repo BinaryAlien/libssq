@@ -19,7 +19,7 @@
           version = "3.0.1";
           src = self;
 
-          nativeBuildInputs = [ pkgs.cmake ];
+          nativeBuildInputs = [ pkgs.cmake pkgs.gtest ];
 
           cmakeFlags = [ "-DBUILD_SHARED_LIBS=ON" ];
 
