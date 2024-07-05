@@ -18,7 +18,7 @@
 #define A2S_RULES_PAYLOAD_LEN 9
 
 static const uint8_t payload_template[A2S_RULES_PAYLOAD_LEN] = {
-    0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_RULES, 0xFF, 0xFF, 0xFF, 0xFF
+    0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_RULES, 0xFF, 0xFF, 0xFF, 0xFF,
 };
 
 static inline void payload_init(uint8_t payload[A2S_RULES_PAYLOAD_LEN]) {
