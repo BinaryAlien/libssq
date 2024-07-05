@@ -42,13 +42,6 @@ static uint8_t *ssq_player_query(SSQ_SERVER *server, size_t *response_len) {
     return response;
 }
 
-static void ssq_player_deserialize_from_stream(SSQ_STREAM *src, A2S_PLAYER *dest) {
-    dest->index    = ssq_stream_read_uint8_t(src);
-    dest->name     = ssq_stream_read_string(src, &dest->name_len);
-    dest->score    = ssq_stream_read_int32_t(src);
-    dest->duration = ssq_stream_read_float(src);
-}
-
 A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len, uint8_t *player_count, SSQ_ERROR *error) {
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
@@ -67,8 +60,12 @@ A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len
         ssq_error_set_from_errno(error);
         return NULL;
     }
-    for (uint8_t i = 0; i < *player_count; ++i)
-        ssq_player_deserialize_from_stream(&stream, players + i);
+    for (uint8_t i = 0; i < *player_count; ++i) {
+        players[i].index    = ssq_stream_read_uint8_t(&stream);
+        players[i].name     = ssq_stream_read_string(&stream, &players[i].name_len);
+        players[i].score    = ssq_stream_read_int32_t(&stream);
+        players[i].duration = ssq_stream_read_float(&stream);
+    }
     return players;
 }
 
