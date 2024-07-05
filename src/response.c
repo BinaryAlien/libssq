@@ -13,7 +13,7 @@ bool ssq_response_has_challenge(const uint8_t response[], size_t response_len) {
 int32_t ssq_response_get_challenge(const uint8_t response[], size_t response_len) {
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
-    ssq_stream_advance(&stream, 1);
+    ssq_stream_advance(&stream, sizeof (uint8_t));
     return ssq_stream_read_int32_t(&stream);
 }
 

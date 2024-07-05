@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ssq/packet.h"
 #include "ssq/query.h"
 #include "ssq/response.h"
 #include "ssq/server/private.h"
@@ -11,8 +12,10 @@
 #define A2S_HEADER_PLAYER 0x55
 #define S2A_HEADER_PLAYER 0x44
 
-#define A2S_PLAYER_PAYLOAD_LEN              9
-#define A2S_PLAYER_PAYLOAD_CHALLENGE_OFFSET (A2S_PLAYER_PAYLOAD_LEN - 4)
+#define A2S_PLAYER_CHALL_LEN    (sizeof (int32_t))
+#define A2S_PLAYER_CHALL_OFFSET (A2S_PLAYER_PAYLOAD_LEN - A2S_PLAYER_CHALL_LEN)
+
+#define A2S_PLAYER_PAYLOAD_LEN 9
 
 static const uint8_t payload_template[A2S_PLAYER_PAYLOAD_LEN] = {
     0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_PLAYER, 0xFF, 0xFF, 0xFF, 0xFF
@@ -23,7 +26,7 @@ static inline void payload_init(uint8_t payload[A2S_PLAYER_PAYLOAD_LEN]) {
 }
 
 static inline void payload_set_challenge(uint8_t payload[A2S_PLAYER_PAYLOAD_LEN], int32_t chall) {
-    memcpy(payload + A2S_PLAYER_PAYLOAD_CHALLENGE_OFFSET, &chall, sizeof (chall));
+    memcpy(payload + A2S_PLAYER_CHALL_OFFSET, &chall, sizeof (chall));
 }
 
 static uint8_t *ssq_player_query(SSQ_SERVER *server, size_t *response_len) {
@@ -50,7 +53,7 @@ A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
     if (ssq_response_is_truncated(response, response_len))
-        ssq_stream_advance(&stream, 4);
+        ssq_stream_advance(&stream, SSQ_PACKET_HEADER_LEN);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
     if (response_header != S2A_HEADER_PLAYER) {
         ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid A2S_PLAYER response header");
