@@ -14,6 +14,11 @@ void ssq_error_set(SSQ_ERROR *error, SSQ_ERROR_CODE code, const char message[]) 
     ssq_helper_strncpy(error->message, message, SSQ_ERROR_MESSAGE_LEN);
 }
 
+void ssq_error_clear(SSQ_ERROR *error) {
+    error->code = SSQE_OK;
+    error->message[0] = '\0';
+}
+
 void ssq_error_set_from_errno(SSQ_ERROR *error) {
     error->code = SSQE_SYSTEM;
 #ifdef _WIN32
