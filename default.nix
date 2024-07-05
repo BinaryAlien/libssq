@@ -4,7 +4,7 @@ pkgs.stdenv.mkDerivation {
   version = "3.0.1";
   src = ./.;
 
-  nativeBuildInputs = with pkgs; [ cmake ];
+  nativeBuildInputs = with pkgs; [ cmake gtest ];
 
   cmakeFlags = [ "-DBUILD_SHARED_LIBS=ON" ];
 
