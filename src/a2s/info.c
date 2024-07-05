@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ssq/packet.h"
 #include "ssq/query.h"
 #include "ssq/response.h"
 #include "ssq/server/private.h"
@@ -11,33 +12,35 @@
 #define A2S_HEADER_INFO 0x54
 #define S2A_HEADER_INFO 0x49
 
-#define A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE    29
-#define A2S_INFO_PAYLOAD_LEN_WITHOUT_CHALLENGE (A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE - 4)
-#define A2S_INFO_PAYLOAD_CHALLENGE_OFFSET      (A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE - 4)
+#define A2S_INFO_CHALL_LEN    (sizeof (int32_t))
+#define A2S_INFO_CHALL_OFFSET (A2S_INFO_PAYLOAD_LEN_WITH_CHALL - A2S_INFO_CHALL_LEN)
 
-static const uint8_t payload_template[A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE] = {
+#define A2S_INFO_PAYLOAD_LEN_WITH_CHALL    29
+#define A2S_INFO_PAYLOAD_LEN_WITHOUT_CHALL (A2S_INFO_PAYLOAD_LEN_WITH_CHALL - A2S_INFO_CHALL_LEN)
+
+static const uint8_t payload_template[A2S_INFO_PAYLOAD_LEN_WITH_CHALL] = {
     0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_INFO,
     'S', 'o', 'u', 'r', 'c', 'e', ' ', 'E', 'n', 'g', 'i', 'n', 'e', ' ', 'Q', 'u', 'e', 'r', 'y', '\0'
 };
 
-static inline void payload_init(uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE]) {
-    memcpy(payload, payload_template, A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE);
+static inline void payload_init(uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL]) {
+    memcpy(payload, payload_template, A2S_INFO_PAYLOAD_LEN_WITH_CHALL);
 }
 
-static inline void payload_set_challenge(uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE], int32_t chall) {
-    memcpy(payload + A2S_INFO_PAYLOAD_CHALLENGE_OFFSET, &chall, sizeof (chall));
+static inline void payload_set_challenge(uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL], int32_t chall) {
+    memcpy(payload + A2S_INFO_CHALL_OFFSET, &chall, sizeof (chall));
 }
 
 static uint8_t *ssq_info_query(SSQ_SERVER *server, size_t *response_len) {
     // Allocate additional storage for possible challenge.
-    uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE];
+    uint8_t payload[A2S_INFO_PAYLOAD_LEN_WITH_CHALL];
     payload_init(payload);
-    uint8_t *response = ssq_query(server, payload, A2S_INFO_PAYLOAD_LEN_WITHOUT_CHALLENGE, response_len);
+    uint8_t *response = ssq_query(server, payload, A2S_INFO_PAYLOAD_LEN_WITHOUT_CHALL, response_len);
     while (response != NULL && ssq_response_has_challenge(response, *response_len)) {
         int32_t chall = ssq_response_get_challenge(response, *response_len);
         payload_set_challenge(payload, chall);
         free(response);
-        response = ssq_query(server, payload, A2S_INFO_PAYLOAD_LEN_WITH_CHALLENGE, response_len);
+        response = ssq_query(server, payload, A2S_INFO_PAYLOAD_LEN_WITH_CHALL, response_len);
     }
     return response;
 }
@@ -97,7 +100,7 @@ A2S_INFO *ssq_info_deserialize(const uint8_t payload[], size_t payload_len, SSQ_
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, payload, payload_len);
     if (ssq_response_is_truncated(payload, payload_len))
-        ssq_stream_advance(&stream, 4);
+        ssq_stream_advance(&stream, SSQ_PACKET_HEADER_LEN);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
     if (response_header != S2A_HEADER_INFO) {
         ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid A2S_INFO response header");
