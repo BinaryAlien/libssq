@@ -62,6 +62,5 @@ SSQ_ERROR_CODE ssq_server_ecode(const SSQ_SERVER *server) { return server->last_
 const char    *ssq_server_emsg(const SSQ_SERVER *server)  { return server->last_error.message; }
 
 void ssq_server_eclr(SSQ_SERVER *server) {
-    server->last_error.code = SSQE_OK;
-    server->last_error.message[0] = '\0';
+    ssq_error_clear(&server->last_error);
 }

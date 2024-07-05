@@ -15,6 +15,7 @@ typedef struct ssq_error {
     char           message[SSQ_ERROR_MESSAGE_SIZE];
 } SSQ_ERROR;
 
+void ssq_error_clear(SSQ_ERROR *error);
 void ssq_error_set(SSQ_ERROR *error, SSQ_ERROR_CODE code, const char *message);
 void ssq_error_set_from_errno(SSQ_ERROR *error);
 #ifdef _WIN32
