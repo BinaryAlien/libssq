@@ -63,11 +63,9 @@ void ssq_packet_free(SSQ_PACKET *packet) {
 }
 
 bool ssq_packets_check_integrity(const SSQ_PACKET *const packets[], uint8_t packet_count) {
-    for (uint8_t i = 1; i < packet_count; ++i) {
-        if (packets[i]->id != packets[0]->id) {
+    for (uint8_t i = 1; i < packet_count; ++i)
+        if (packets[i]->id != packets[0]->id)
             return false;
-        }
-    }
     return true;
 }
 
@@ -94,10 +92,8 @@ uint8_t *ssq_packets_to_response(const SSQ_PACKET *const packets[], uint8_t pack
 }
 
 void ssq_packets_free(SSQ_PACKET *packets[], uint8_t packet_count) {
-    for (uint8_t i = 0; i < packet_count; ++i) {
-        if (packets[i] != NULL) {
+    for (uint8_t i = 0; i < packet_count; ++i)
+        if (packets[i] != NULL)
             ssq_packet_free(packets[i]);
-        }
-    }
     free(packets);
 }
