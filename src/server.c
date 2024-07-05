@@ -55,9 +55,9 @@ void ssq_server_timeout(SSQ_SERVER *server, SSQ_TIMEOUT_SELECTOR which, time_t v
 }
 #endif /* _WIN32 */
 
-bool           ssq_server_eok(const SSQ_SERVER *server) { return ssq_server_ecode(server) == SSQE_OK; }
+bool           ssq_server_eok(const SSQ_SERVER *server)   { return ssq_server_ecode(server) == SSQE_OK; }
 SSQ_ERROR_CODE ssq_server_ecode(const SSQ_SERVER *server) { return server->last_error.code; }
-const char    *ssq_server_emsg(const SSQ_SERVER *server) { return server->last_error.message; }
+const char    *ssq_server_emsg(const SSQ_SERVER *server)  { return server->last_error.message; }
 
 void ssq_server_eclr(SSQ_SERVER *server) {
     server->last_error.code = SSQE_OK;
