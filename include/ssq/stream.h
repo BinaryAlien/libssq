@@ -12,12 +12,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct ssq_stream {
-    const uint8_t *buf;
+    const uint8_t *data;
     size_t         size;
     size_t         pos;
 } SSQ_STREAM;
 
-void     ssq_stream_wrap(SSQ_STREAM *stream, const void *buf, size_t size);
+void     ssq_stream_wrap(SSQ_STREAM *stream, const void *data, size_t size);
 
 void     ssq_stream_advance(SSQ_STREAM *stream, size_t n);
 size_t   ssq_stream_remaining(const SSQ_STREAM *stream);
