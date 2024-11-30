@@ -136,8 +136,8 @@ void ssq_info_free(A2S_INFO *info) {
     free(info);
 }
 
-bool ssq_info_has_gameid(const A2S_INFO *info) { return info->edf & A2S_INFO_FLAG_GAMEID; }
+bool ssq_info_has_gameid(const A2S_INFO *info)   { return info->edf & A2S_INFO_FLAG_GAMEID;   }
 bool ssq_info_has_keywords(const A2S_INFO *info) { return info->edf & A2S_INFO_FLAG_KEYWORDS; }
-bool ssq_info_has_port(const A2S_INFO *info) { return info->edf & A2S_INFO_FLAG_PORT; }
-bool ssq_info_has_steamid(const A2S_INFO *info) { return info->edf & A2S_INFO_FLAG_STEAMID; }
-bool ssq_info_has_stv(const A2S_INFO *info) { return info->edf & A2S_INFO_FLAG_STV; }
+bool ssq_info_has_port(const A2S_INFO *info)     { return info->edf & A2S_INFO_FLAG_PORT;     }
+bool ssq_info_has_steamid(const A2S_INFO *info)  { return info->edf & A2S_INFO_FLAG_STEAMID;  }
+bool ssq_info_has_stv(const A2S_INFO *info)      { return info->edf & A2S_INFO_FLAG_STV;      }
