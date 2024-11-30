@@ -1,9 +1,9 @@
-#include "ssq/error.h"
+#include "error.h"
 
 #include <errno.h>
 #include <string.h>
 
-#include "ssq/helper.h"
+#include "helper.h"
 
 #ifdef _WIN32
 # include <winsock2.h>

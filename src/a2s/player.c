@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "packet.h"
+#include "query.h"
+#include "response.h"
 #include "server.h"
-#include "ssq/packet.h"
-#include "ssq/query.h"
-#include "ssq/response.h"
-#include "ssq/stream.h"
+#include "stream.h"
 
 #define A2S_HEADER_PLAYER 0x55
 #define S2A_HEADER_PLAYER 0x44

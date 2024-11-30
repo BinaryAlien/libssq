@@ -1,7 +1,5 @@
-/* stream.h -- Data input stream. */
-
-#ifndef SSQ_STREAM_H
-#define SSQ_STREAM_H
+#ifndef STREAM_H
+#define STREAM_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -41,4 +39,4 @@ char    *ssq_stream_read_string(SSQ_STREAM *stream, size_t *len);
 }
 #endif /* __cplusplus */
 
-#endif /* !SSQ_STREAM_H */
+#endif /* !STREAM_H */

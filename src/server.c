@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "helper.h"
 #include "server.h"
-#include "ssq/helper.h"
 
 static void prepare_udp_hints(struct addrinfo *hints) {
     memset(hints, 0, sizeof (*hints));

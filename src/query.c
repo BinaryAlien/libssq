@@ -1,9 +1,9 @@
-#include "ssq/query.h"
+#include "query.h"
 
 #include <stdlib.h>
 
+#include "packet.h"
 #include "server.h"
-#include "ssq/packet.h"
 
 #ifndef _WIN32
 # include <unistd.h>
