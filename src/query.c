@@ -99,7 +99,6 @@ static SSQ_PACKET **ssq_query_recv(SOCKET sockfd, uint8_t *packet_count, SSQ_ERR
 }
 
 uint8_t *ssq_query(SSQ_SERVER *server, const uint8_t payload[], size_t payload_len, size_t *response_len) {
-    uint8_t *response = NULL;
     SOCKET sockfd = ssq_query_init_socket(server);
     if (!ssq_server_eok(server))
         return NULL;
@@ -111,6 +110,7 @@ uint8_t *ssq_query(SSQ_SERVER *server, const uint8_t payload[], size_t payload_l
     if (!ssq_server_eok(server))
         goto end;
     const SSQ_PACKET *const *packets_readonly = (const SSQ_PACKET *const *)packets;
+    uint8_t *response = NULL;
     if (ssq_packets_check_integrity(packets_readonly, packet_count))
         response = ssq_packets_to_response(packets_readonly, packet_count, response_len, &server->last_error);
     else
