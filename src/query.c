@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
+#include "server.h"
 #include "ssq/packet.h"
-#include "ssq/server/private.h"
 
 #ifndef _WIN32
 # include <unistd.h>

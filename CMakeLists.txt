@@ -13,6 +13,7 @@ if (UNIX)
     target_compile_definitions(ssq PRIVATE _POSIX_C_SOURCE=200112L)
 endif (UNIX)
 
+target_include_directories(ssq PRIVATE src)
 target_include_directories(ssq PUBLIC include)
 target_sources(ssq PUBLIC FILE_SET HEADERS BASE_DIRS include)
 
