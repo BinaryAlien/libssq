@@ -24,10 +24,10 @@ typedef struct ssq_error {
     char           message[SSQ_ERROR_MESSAGE_SIZE];
 } SSQ_ERROR;
 
-void ssq_error_set(SSQ_ERROR *err, SSQ_ERROR_CODE code, const char *message);
-void ssq_error_set_from_errno(SSQ_ERROR *err);
+void ssq_error_set(SSQ_ERROR *error, SSQ_ERROR_CODE code, const char *message);
+void ssq_error_set_from_errno(SSQ_ERROR *error);
 #ifdef _WIN32
-void ssq_error_set_from_wsa(SSQ_ERROR *err);
+void ssq_error_set_from_wsa(SSQ_ERROR *error);
 #endif /* _WIN32 */
 
 #ifdef __cplusplus

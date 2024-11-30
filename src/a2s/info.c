@@ -93,19 +93,19 @@ static void ssq_info_deserialize_from_stream(SSQ_STREAM *src, A2S_INFO *dest) {
         dest->gameid = ssq_stream_read_uint64_t(src);
 }
 
-A2S_INFO *ssq_info_deserialize(const uint8_t payload[], size_t payload_len, SSQ_ERROR *err) {
+A2S_INFO *ssq_info_deserialize(const uint8_t payload[], size_t payload_len, SSQ_ERROR *error) {
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, payload, payload_len);
     if (ssq_response_is_truncated(payload, payload_len))
         ssq_stream_advance(&stream, 4);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
     if (response_header != S2A_HEADER_INFO) {
-        ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid A2S_INFO response header");
+        ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid A2S_INFO response header");
         return NULL;
     }
     A2S_INFO *info = malloc(sizeof (*info));
     if (info == NULL) {
-        ssq_error_set_from_errno(err);
+        ssq_error_set_from_errno(error);
         return NULL;
     }
     memset(info, 0, sizeof (*info));

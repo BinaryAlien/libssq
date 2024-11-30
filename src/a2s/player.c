@@ -46,14 +46,14 @@ static void ssq_player_deserialize_from_stream(SSQ_STREAM *src, A2S_PLAYER *dest
     dest->duration = ssq_stream_read_float(src);
 }
 
-A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len, uint8_t *player_count, SSQ_ERROR *err) {
+A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len, uint8_t *player_count, SSQ_ERROR *error) {
     SSQ_STREAM stream;
     ssq_stream_wrap(&stream, response, response_len);
     if (ssq_response_is_truncated(response, response_len))
         ssq_stream_advance(&stream, 4);
     uint8_t response_header = ssq_stream_read_uint8_t(&stream);
     if (response_header != S2A_HEADER_PLAYER) {
-        ssq_error_set(err, SSQE_INVALID_RESPONSE, "Invalid A2S_PLAYER response header");
+        ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid A2S_PLAYER response header");
         return NULL;
     }
     *player_count = ssq_stream_read_uint8_t(&stream);
@@ -61,7 +61,7 @@ A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len
         return NULL;
     A2S_PLAYER *players = calloc(*player_count, sizeof (*players));
     if (players == NULL) {
-        ssq_error_set_from_errno(err);
+        ssq_error_set_from_errno(error);
         return NULL;
     }
     for (uint8_t i = 0; i < *player_count; ++i)
