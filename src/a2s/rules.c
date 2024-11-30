@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "server.h"
 #include "ssq/packet.h"
 #include "ssq/query.h"
 #include "ssq/response.h"
-#include "ssq/server/private.h"
 #include "ssq/stream.h"
 
 #define A2S_HEADER_RULES 0x56

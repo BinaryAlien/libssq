@@ -1,5 +1,5 @@
-#ifndef SSQ_SERVER_PRIVATE_H
-#define SSQ_SERVER_PRIVATE_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include "ssq/error.h"
 #include "ssq/server/timeout.h"
@@ -24,4 +24,4 @@ typedef struct ssq_server {
 }
 #endif /* __cplusplus */
 
-#endif /* !SSQ_SERVER_PRIVATE_H */
+#endif /* !SERVER_H */
