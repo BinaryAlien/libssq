@@ -25,14 +25,12 @@ static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
     SOCKET sockfd = INVALID_SOCKET;
     for (struct addrinfo *addr = server->addr_list; addr != NULL; addr = addr->ai_next) {
         sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-        if (sockfd == INVALID_SOCKET) {
+        if (sockfd == INVALID_SOCKET)
             continue;
-        } else if (connect(sockfd, addr->ai_addr, (int)addr->ai_addrlen) != SOCKET_ERROR) {
+        if (connect(sockfd, addr->ai_addr, (int)addr->ai_addrlen) != SOCKET_ERROR)
             break;
-        } else {
-            closesocket(sockfd);
-            sockfd = INVALID_SOCKET;
-        }
+        closesocket(sockfd);
+        sockfd = INVALID_SOCKET;
     }
     if (sockfd == INVALID_SOCKET) {
         ssq_error_set(&server->last_error, SSQE_NO_SOCKET, "Could not create an endpoint for communication");
