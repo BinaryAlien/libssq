@@ -1,7 +1,5 @@
-/* query.h -- Server query routine. */
-
-#ifndef SSQ_QUERY_H
-#define SSQ_QUERY_H
+#ifndef QUERY_H
+#define QUERY_H
 
 #include <stddef.h>
 
@@ -17,4 +15,4 @@ uint8_t *ssq_query(SSQ_SERVER *server, const uint8_t *payload, size_t payload_le
 }
 #endif /* __cplusplus */
 
-#endif /* !SSQ_QUERY_H */
+#endif /* !QUERY_H */

@@ -1,10 +1,10 @@
-#include "ssq/packet.h"
+#include "packet.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "ssq/helper.h"
-#include "ssq/stream.h"
+#include "helper.h"
+#include "stream.h"
 
 static void ssq_packet_init_payload(SSQ_PACKET *packet, SSQ_STREAM *stream, SSQ_ERROR *error) {
     packet->payload = malloc(packet->payload_len);

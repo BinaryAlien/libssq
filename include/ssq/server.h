@@ -5,15 +5,31 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#ifdef _WIN32
+# include <ws2tcpip.h>
+#else /* !_WIN32 */
+# include <sys/time.h>
+#endif /* _WIN32 */
 
 #include "ssq/error.h"
-#include "ssq/server/timeout.h"
+
+#ifndef SSQ_TIMEOUT_RECV_DEFAULT
+# define SSQ_TIMEOUT_RECV_DEFAULT 5000 // ms
+#endif /* !SSQ_TIMEOUT_RECV_DEFAULT */
+#ifndef SSQ_TIMEOUT_SEND_DEFAULT
+# define SSQ_TIMEOUT_SEND_DEFAULT 5000 // ms
+#endif /* !SSQ_TIMEOUT_SEND_DEFAULT */
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 typedef struct ssq_server SSQ_SERVER;
+
+typedef enum ssq_timeout_selector {
+    SSQ_TIMEOUT_RECV = (1 << 0),
+    SSQ_TIMEOUT_SEND = (1 << 1),
+} SSQ_TIMEOUT_SELECTOR;
 
 SSQ_SERVER    *ssq_server_new(const char *hostname, uint16_t port);
 void           ssq_server_free(SSQ_SERVER *server);

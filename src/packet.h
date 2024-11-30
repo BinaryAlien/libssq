@@ -1,13 +1,11 @@
-/* packet.h -- Representation of a Source server packet. */
-
-#ifndef SSQ_PACKET_H
-#define SSQ_PACKET_H
+#ifndef PACKET_H
+#define PACKET_H
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "ssq/error.h"
+#include "error.h"
 
 #define SSQ_PACKET_SIZE 1400
 
@@ -42,4 +40,4 @@ void        ssq_packets_free(SSQ_PACKET **packets, uint8_t packet_count);
 }
 #endif /* __cplusplus */
 
-#endif /* !SSQ_PACKET_H */
+#endif /* !PACKET_H */

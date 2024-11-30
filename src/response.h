@@ -1,7 +1,5 @@
-/* response.h -- Query response utility. */
-
-#ifndef SSQ_RESPONSE_H
-#define SSQ_RESPONSE_H
+#ifndef RESPONSE_H
+#define RESPONSE_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -21,4 +19,4 @@ bool    ssq_response_is_truncated(const uint8_t *response, size_t response_len);
 }
 #endif /* __cplusplus */
 
-#endif /* !SSQ_RESPONSE_H */
+#endif /* !RESPONSE_H */

@@ -1,7 +1,7 @@
-#include "ssq/response.h"
+#include "response.h"
 
-#include "ssq/packet.h"
-#include "ssq/stream.h"
+#include "packet.h"
+#include "stream.h"
 
 bool ssq_response_has_challenge(const uint8_t response[], size_t response_len) {
     SSQ_STREAM stream;

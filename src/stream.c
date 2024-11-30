@@ -1,9 +1,9 @@
-#include "ssq/stream.h"
+#include "stream.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "ssq/helper.h"
+#include "helper.h"
 
 void ssq_stream_wrap(SSQ_STREAM *stream, const void *data, size_t size) {
     stream->data = data;

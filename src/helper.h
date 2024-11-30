@@ -1,7 +1,5 @@
-/* helper.h -- Utility functions. */
-
-#ifndef SSQ_HELPER_H
-#define SSQ_HELPER_H
+#ifndef HELPER_H
+#define HELPER_H
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -42,4 +40,4 @@ static inline void ssq_helper_millis_to_timeval(time_t value_in_ms, struct timev
 }
 #endif /* !_WIN32 */
 
-#endif /* !SSQ_HELPER_H */
+#endif /* !HELPER_H */
