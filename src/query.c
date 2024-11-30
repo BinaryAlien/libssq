@@ -27,7 +27,11 @@ static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
         sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
         if (sockfd == INVALID_SOCKET)
             continue;
+#ifdef _WIN32
         if (connect(sockfd, addr->ai_addr, (int)addr->ai_addrlen) != SOCKET_ERROR)
+#else /* !_WIN32 */
+        if (connect(sockfd, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR)
+#endif /* _WIN32 */
             break;
         closesocket(sockfd);
         sockfd = INVALID_SOCKET;
