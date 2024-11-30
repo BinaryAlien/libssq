@@ -5,8 +5,8 @@
 
 #include "ssq/helper.h"
 
-void ssq_stream_wrap(SSQ_STREAM *stream, const void *buf, size_t size) {
-    stream->buf = buf;
+void ssq_stream_wrap(SSQ_STREAM *stream, const void *data, size_t size) {
+    stream->data = data;
     stream->size = size;
     stream->pos = 0;
 }
@@ -25,7 +25,7 @@ bool ssq_stream_end(const SSQ_STREAM *stream) {
 
 void ssq_stream_read(SSQ_STREAM *src, void *dest, size_t n) {
     if (n <= ssq_stream_remaining(src)) {
-        memcpy(dest, src->buf + src->pos, n);
+        memcpy(dest, src->data + src->pos, n);
         ssq_stream_advance(src, n);
     } else {
         memset(dest, 0, n);
@@ -57,7 +57,7 @@ bool ssq_stream_read_bool(SSQ_STREAM *stream) {
 /* Compute the number of bytes until the next null byte or end of stream. */
 static size_t ssq_stream_read_string_len(const SSQ_STREAM *stream) {
     size_t len = 0;
-    while (len < ssq_stream_remaining(stream) && stream->buf[stream->pos + len] != '\0')
+    while (len < ssq_stream_remaining(stream) && stream->data[stream->pos + len] != '\0')
         ++len;
     return len;
 }
@@ -67,7 +67,7 @@ char *ssq_stream_read_string(SSQ_STREAM *stream, size_t *len) {
     char *dest = calloc(*len + 1, sizeof (*dest));
     if (dest == NULL)
         return NULL;
-    const char *src = (const char *)(stream->buf + stream->pos);
+    const char *src = (const char *)(stream->data + stream->pos);
     ssq_helper_strncpy(dest, src, *len);
     ssq_stream_advance(stream, *len + 1);
     return dest;
