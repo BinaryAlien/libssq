@@ -15,9 +15,7 @@ It does **not** currently support **Goldsource** nor **compressed** responses.
 
 ## Documentation
 
-The [wiki of this repository](https://github.com/BinaryAlien/libssq/wiki) provides documentation about the library and gets updated accordingly.
-
-To quickly get started, check out the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c).
+Up-to-date documentation with examples is available on [the wiki](https://github.com/BinaryAlien/libssq/wiki).
 
 ## Build
 
