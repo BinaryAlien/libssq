@@ -13,12 +13,12 @@
 typedef int SOCKET;
 #endif /* !_WIN32 */
 
-static int ssq_query_init_socket_timeout(SOCKET sockfd, const SSQ_TIMEOUT *value) {
-    int ecode;
-    ecode = setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&value->recv, sizeof (value->recv));
-    if (ecode != SOCKET_ERROR)
-        ecode = setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&value->send, sizeof (value->send));
-    return ecode;
+static bool ssq_query_init_socket_timeout(SOCKET sockfd, const SSQ_TIMEOUT *value) {
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&value->recv, sizeof (value->recv)) == SOCKET_ERROR)
+        return false;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&value->send, sizeof (value->send)) == SOCKET_ERROR)
+        return false;
+    return true;
 }
 
 static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
@@ -40,7 +40,7 @@ static SOCKET ssq_query_init_socket(SSQ_SERVER *server) {
         ssq_error_set(&server->last_error, SSQE_NO_SOCKET, "Could not create an endpoint for communication");
         return INVALID_SOCKET;
     }
-    if (ssq_query_init_socket_timeout(sockfd, &server->timeout) == SOCKET_ERROR) {
+    if (!ssq_query_init_socket_timeout(sockfd, &server->timeout)) {
 #ifdef _WIN32
         ssq_error_set_from_wsa(&server->last_error);
 #else /* !_WIN32 */
