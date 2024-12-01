@@ -35,6 +35,8 @@ SSQ_SERVER *ssq_server_new(const char hostname[], uint16_t port) {
 }
 
 void ssq_server_free(SSQ_SERVER *server) {
+    if (server == NULL)
+        return;
     freeaddrinfo(server->addr_list);
     free(server);
 }

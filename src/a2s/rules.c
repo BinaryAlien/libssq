@@ -78,6 +78,8 @@ A2S_RULES *ssq_rules(SSQ_SERVER *server, uint16_t *rule_count) {
 }
 
 void ssq_rules_free(A2S_RULES rules[], uint16_t rule_count) {
+    if (rules == NULL)
+        return;
     for (uint16_t i = 0; i < rule_count; ++i) {
         free(rules[i].name);
         free(rules[i].value);
