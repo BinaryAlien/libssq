@@ -80,6 +80,8 @@ A2S_PLAYER *ssq_player(SSQ_SERVER *server, uint8_t *player_count) {
 }
 
 void ssq_player_free(A2S_PLAYER players[], uint8_t player_count) {
+    if (players == NULL)
+        return;
     for (uint8_t i = 0; i < player_count; ++i)
         free(players[i].name);
     free(players);

@@ -123,6 +123,8 @@ A2S_INFO *ssq_info(SSQ_SERVER *server) {
 }
 
 void ssq_info_free(A2S_INFO *info) {
+    if (info == NULL)
+        return;
     free(info->name);
     free(info->map);
     free(info->folder);
