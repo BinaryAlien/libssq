@@ -37,5 +37,5 @@ cmake --build builddir
 
 * (GNU/Linux) Compile the [example program](https://github.com/BinaryAlien/libssq/blob/main/example/example.c) using [GCC](https://gcc.gnu.org/).
 ```sh
-gcc -std=c99 -Iinclude -o ssq example/example.c -Lbuilddir -lssq
+gcc -std=c99 -Iinclude example/example.c -o ssq -Lbuilddir -lssq
 ```
