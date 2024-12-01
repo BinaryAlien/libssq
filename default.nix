@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.stdenv.mkDerivation {
   pname = "libssq";
-  version = "3.0.0";
+  version = "3.0.1";
   src = ./.;
 
   nativeBuildInputs = with pkgs; [ cmake ];
