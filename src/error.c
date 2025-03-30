@@ -33,7 +33,7 @@ void ssq_error_set_from_wsa(SSQ_ERROR *error) {
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         error->message,
         SSQ_ERROR_MESSAGE_SIZE,
-        NULL,
+        NULL
     );
 }
 #endif /* _WIN32 */
