@@ -1,0 +1,18 @@
+#ifndef QUERY_H
+#define QUERY_H
+
+#include <stddef.h>
+
+#include "ssq/server.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+uint8_t *ssq_query(struct ssq_server *server, const uint8_t *payload, size_t payload_len, size_t *response_len);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* !QUERY_H */
