@@ -16,7 +16,7 @@
 
 #include "server.h"
 
-static int ssq_getaddrinfo(
+static int ssq_server_getaddrinfo(
     struct ssq_server *const server,
     const char        *const node,
     const char        *const service
@@ -29,7 +29,7 @@ static int ssq_getaddrinfo(
     return getaddrinfo(node, service, &hints, &server->addresses);
 }
 
-static int ssq_getaddrinfo_canonical(
+static int ssq_server_resolve(
     struct ssq_server *const server,
     const char        *const host,
     const uint16_t           port
@@ -40,7 +40,7 @@ static int ssq_getaddrinfo_canonical(
 #else /* !_WIN32 */
     snprintf(service,  sizeof(service), "%" PRIu16, port);
 #endif /* _WIN32 */
-    return ssq_getaddrinfo(server, host, service);
+    return ssq_server_getaddrinfo(server, host, service);
 }
 
 static struct ssq_server *ssq_server_alloc(void)
@@ -54,14 +54,14 @@ static struct ssq_server *ssq_server_alloc(void)
     return server;
 }
 
-struct ssq_server *ssq_server_resolve(
-    const char *const hostname,
+struct ssq_server *ssq_server_from_address(
+    const char *const host,
     const uint16_t    port
 ) {
     struct ssq_server *const server = ssq_server_alloc();
     if (server == NULL)
         return NULL;
-    const int gai_errno = ssq_getaddrinfo_canonical(server, hostname, port);
+    const int gai_errno = ssq_server_resolve(server, host, port);
     if (gai_errno != 0)
         ssq_error_set(&server->last_error, SSQE_GAI, gai_strerror(gai_errno));
     return server;

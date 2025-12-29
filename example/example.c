@@ -18,7 +18,7 @@ void ssq_rules_print(const A2S_RULES *rules, uint16_t rule_count);
 
 int main(int argc, char *argv[]) {
     if (argc < 2 || argc > 3) {
-        fprintf(stderr, "usage: %s hostname [port]\n", argv[0]);
+        fprintf(stderr, "usage: %s host [port]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     }
 #endif /* _WIN32 */
 
-    const char *hostname = argv[1];
+    const char *host = argv[1];
     uint16_t port;
     if (argc == 3)
         port = atoi(argv[2]);
@@ -38,12 +38,12 @@ int main(int argc, char *argv[]) {
         port = DEFAULT_PORT;
 
     /* Initialization */
-    struct ssq_server *server = ssq_server_resolve(hostname, port);
+    struct ssq_server *server = ssq_server_from_address(host, port);
     if (server == NULL) {
         fprintf(stderr, "ssq_server_new: memory exhausted\n");
         exit(EXIT_FAILURE);
     } else if (!ssq_server_eok(server)) {
-        fprintf(stderr, "ssq_server_new: %s: %s\n", hostname, ssq_server_emessage(server));
+        fprintf(stderr, "ssq_server_new: %s: %s\n", host, ssq_server_emessage(server));
         ssq_server_free(server);
         exit(EXIT_FAILURE);
     }

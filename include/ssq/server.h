@@ -13,7 +13,7 @@ extern "C" {
 
 struct ssq_server;
 
-struct ssq_server  *ssq_server_resolve(const char *host, uint16_t port);
+struct ssq_server  *ssq_server_from_address(const char *host, uint16_t port);
 void                ssq_server_free(struct ssq_server *server);
 
 void                ssq_server_timeout(struct ssq_server *server, enum ssq_timeout_selector which, ssq_milliseconds duration);
