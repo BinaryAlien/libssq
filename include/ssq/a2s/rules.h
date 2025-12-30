@@ -1,5 +1,3 @@
-/* rules.h -- A2S_RULES server queries. */
-
 #ifndef SSQ_A2S_RULES_H
 #define SSQ_A2S_RULES_H
 
@@ -11,15 +9,20 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct a2s_rules {
-    char   *name;      /* Name of the rule.             */
-    size_t  name_len;  /* Length of the `name' string.  */
-    char   *value;     /* Value of the rule.            */
-    size_t  value_len; /* Length of the `value' string. */
-} A2S_RULES;
+struct ssq_a2s_rule {
+  /* Name of the rule. */
+  char *name;
+  /* Size in bytes of the `rule` UTF-8 string. */
+  size_t name_size;
 
-A2S_RULES *ssq_rules(struct ssq_server *server, uint16_t *rule_count);
-void       ssq_rules_free(A2S_RULES *rules, uint16_t rule_count);
+  /* Value of the rule. */
+  char *value;
+  /* Size in bytes of the `value` UTF-8 string. */
+  size_t value_size;
+};
+
+struct ssq_a2s_rule *ssq_a2s_rules(struct ssq_server *server, uint16_t *count);
+void ssq_a2s_rules_free(struct ssq_a2s_rule *rules, uint16_t count);
 
 #ifdef __cplusplus
 }

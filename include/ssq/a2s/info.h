@@ -1,75 +1,116 @@
-/** info.h -- A2S_INFO server queries. */
-
 #ifndef SSQ_A2S_INFO_H
 #define SSQ_A2S_INFO_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "ssq/server.h"
-
-#define A2S_INFO_FLAG_GAMEID   0x01
-#define A2S_INFO_FLAG_KEYWORDS 0x20
-#define A2S_INFO_FLAG_PORT     0x80
-#define A2S_INFO_FLAG_STEAMID  0x10
-#define A2S_INFO_FLAG_STV      0x40
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef enum a2s_server_type {
-    A2S_SERVER_TYPE_DEDICATED     = 'd',
-    A2S_SERVER_TYPE_NON_DEDICATED = 'l',
-    A2S_SERVER_TYPE_STV_RELAY     = 'p',
-    A2S_SERVER_TYPE_UNKNOWN       = '\0',
-} A2S_SERVER_TYPE;
+enum ssq_a2s_info_server_type {
+  SSQ_A2S_INFO_SERVER_TYPE_UNKNOWN = '\0',
+  SSQ_A2S_INFO_SERVER_TYPE_DEDICATED = 'd',
+  SSQ_A2S_INFO_SERVER_TYPE_NON_DEDICATED = 'l',
+  SSQ_A2S_INFO_SERVER_TYPE_STV_RELAY = 'p',
+};
 
-typedef enum a2s_environment {
-    A2S_ENVIRONMENT_LINUX   = 'l',
-    A2S_ENVIRONMENT_WINDOWS = 'w',
-    A2S_ENVIRONMENT_MAC     = 'm',
-    A2S_ENVIRONMENT_UNKNOWN = '\0',
-} A2S_ENVIRONMENT;
+enum ssq_a2s_info_environment {
+  SSQ_A2S_INFO_ENVIRONMENT_UNKNOWN = '\0',
+  SSQ_A2S_INFO_ENVIRONMENT_LINUX = 'l',
+  SSQ_A2S_INFO_ENVIRONMENT_MAC = 'm',
+  SSQ_A2S_INFO_ENVIRONMENT_WINDOWS = 'w',
+};
 
-typedef struct a2s_info {
-    uint8_t         protocol;     /* Protocol version used by the server.                      */
-    char           *name;         /* Name of the server.                                       */
-    size_t          name_len;     /* Length of the `name' string.                              */
-    char           *map;          /* Map the server has currently loaded.                      */
-    size_t          map_len;      /* Length of the `map' string.                               */
-    char           *folder;       /* Name of the folder containing the game files.             */
-    size_t          folder_len;   /* Length of the `folder' string.                            */
-    char           *game;         /* Full name of the game.                                    */
-    size_t          game_len;     /* Length of the `game' string.                              */
-    uint16_t        id;           /* Steam Application ID of game.                             */
-    uint8_t         players;      /* Number of players on the server.                          */
-    uint8_t         max_players;  /* Maximum number of players the server reports it can hold. */
-    uint8_t         bots;         /* Number of bots on the server.                             */
-    A2S_SERVER_TYPE server_type;  /* The type of server.                                       */
-    A2S_ENVIRONMENT environment;  /* The operating system of the server.                       */
-    bool            visibility;   /* Whether the server requires a password.                   */
-    bool            vac;          /* Whether the server uses VAC.                              */
-    char           *version;      /* Version of the game installed on the server.              */
-    size_t          version_len;  /* Length of the `version' string.                           */
-    uint8_t         edf;          /* Extra Data Flag.                                          */
-    uint16_t        port;         /* The server's game port number.                            */
-    uint64_t        steamid;      /* Server's SteamID.                                         */
-    uint16_t        stv_port;     /* Spectator port number for SourceTV.                       */
-    char           *stv_name;     /* Name of the spectator server for SourceTV.                */
-    size_t          stv_name_len; /* Length of the `stv_name' string.                          */
-    char           *keywords;     /* Tags that describe the game according to the server.      */
-    size_t          keywords_len; /* Length of the `keywords' string.                          */
-    uint64_t        gameid;       /* The server's 64-bit GameID.                               */
-} A2S_INFO;
+struct ssq_a2s_info {
+  /* Protocol version used by the server. */
+  uint8_t protocol;
 
-A2S_INFO *ssq_info(struct ssq_server *server);
-void      ssq_info_free(A2S_INFO *info);
+  /* Name of the server. */
+  char *name;
+  /* Size in bytes of the `name` UTF-8 string. */
+  size_t name_size;
 
-bool      ssq_info_has_gameid(const A2S_INFO *info);
-bool      ssq_info_has_keywords(const A2S_INFO *info);
-bool      ssq_info_has_port(const A2S_INFO *info);
-bool      ssq_info_has_steamid(const A2S_INFO *info);
-bool      ssq_info_has_stv(const A2S_INFO *info);
+  /* Map the server has currently loaded. */
+  char *map;
+  /* Size in bytes of the `map` UTF-8 string. */
+  size_t map_size;
+
+  /* Name of the folder containing the game files. */
+  char *folder;
+  /* Size in bytes of the `folder` UTF-8 string. */
+  size_t folder_size;
+
+  /* Full name of the game. */
+  char *game;
+  /* Size in bytes of the `game` string. */
+  size_t game_size;
+
+  /* Steam Application ID of game. */
+  uint16_t id;
+
+  /* Number of players on the server. */
+  uint8_t players;
+
+  /* Maximum number of players the server reports it can hold. */
+  uint8_t max_players;
+
+  /* Number of bots on the server. */
+  uint8_t bots;
+
+  /* The type of server. */
+  enum ssq_a2s_info_server_type server_type;
+
+  /* The operating system of the server. */
+  enum ssq_a2s_info_environment environment;
+
+  /* Whether the server requires a password. */
+  bool visibility;
+
+  /* Whether the server uses VAC. */
+  bool vac;
+
+  /* Version of the game installed on the server. */
+  char *version;
+
+  /* Size in bytes of the `version` UTF-8 string. */
+  size_t version_size;
+
+  /* Extra Data Flag. */
+  uint8_t edf;
+
+  /* The server's game port number. */
+  uint16_t port;
+
+  /* Server's SteamID. */
+  uint64_t steamid;
+
+  /* Spectator port number for SourceTV. */
+  uint16_t stv_port;
+  /* Name of the spectator server for SourceTV. */
+  char *stv_name;
+  /* Size in bytes of the `stv_name` UTF-8 string. */
+  size_t stv_name_size;
+
+  /* Tags that describe the game according to the server. */
+  char *keywords;
+  /* Size in bytes of the `keywords` string. */
+  size_t keywords_size;
+
+  /* The server's 64-bit GameID. */
+  uint64_t gameid;
+};
+
+struct ssq_a2s_info *ssq_a2s_info(struct ssq_server *server);
+void ssq_a2s_info_free(struct ssq_a2s_info *info);
+
+bool ssq_a2s_info_has_gameid(const struct ssq_a2s_info *info);
+bool ssq_a2s_info_has_keywords(const struct ssq_a2s_info *info);
+bool ssq_a2s_info_has_port(const struct ssq_a2s_info *info);
+bool ssq_a2s_info_has_steamid(const struct ssq_a2s_info *info);
+bool ssq_a2s_info_has_stv(const struct ssq_a2s_info *info);
 
 #ifdef __cplusplus
 }

@@ -1,76 +1,109 @@
 #include "stream.h"
 
+#include <assert.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
-void ssq_stream_wrap(SSQ_STREAM *stream, const void *data, size_t size) {
-    stream->data = data;
-    stream->size = size;
-    stream->pos = 0;
+void ssq_stream_initialize(struct ssq_stream *const stream,
+                           const void *const buffer, const size_t size) {
+  stream->begin = (uint8_t *)buffer;
+  stream->end = stream->begin + size;
+  stream->cursor = stream->begin;
 }
 
-void ssq_stream_advance(SSQ_STREAM *stream, size_t n) {
-    stream->pos += n;
+size_t ssq_stream_available(const struct ssq_stream *const stream) {
+  assert(stream->begin <= stream->cursor && stream->cursor <= stream->end);
+  return stream->end - stream->cursor;
 }
 
-size_t ssq_stream_remaining(const SSQ_STREAM *stream) {
-    return ssq_stream_end(stream) ? 0 : (stream->size - stream->pos);
+size_t ssq_stream_position(const struct ssq_stream *const stream) {
+  assert(stream->begin <= stream->cursor && stream->cursor <= stream->end);
+  return stream->cursor - stream->begin;
 }
 
-bool ssq_stream_end(const SSQ_STREAM *stream) {
-    return stream->pos >= stream->size;
+size_t ssq_stream_forward(struct ssq_stream *const stream, const size_t count) {
+  stream->cursor += count;
+  assert(stream->begin <= stream->cursor && stream->cursor <= stream->end);
 }
 
-void ssq_stream_read(SSQ_STREAM *src, void *dest, size_t n) {
-    if (n <= ssq_stream_remaining(src)) {
-        memcpy(dest, src->data + src->pos, n);
-        ssq_stream_advance(src, n);
-    } else {
-        memset(dest, 0, n);
-    }
+static size_t minzu(const size_t lhs, const size_t rhs) {
+  return lhs < rhs ? lhs : rhs;
 }
 
-#define SSQ_STREAM_READ_DECL(Type)                       \
-    Type ssq_stream_read_##Type(SSQ_STREAM *stream) {    \
-        Type value;                                      \
-        ssq_stream_read(stream, &value, sizeof (value)); \
-        return value;                                    \
-    }
-
-SSQ_STREAM_READ_DECL(int8_t)
-SSQ_STREAM_READ_DECL(int16_t)
-SSQ_STREAM_READ_DECL(int32_t)
-SSQ_STREAM_READ_DECL(int64_t)
-SSQ_STREAM_READ_DECL(uint8_t)
-SSQ_STREAM_READ_DECL(uint16_t)
-SSQ_STREAM_READ_DECL(uint32_t)
-SSQ_STREAM_READ_DECL(uint64_t)
-SSQ_STREAM_READ_DECL(float)
-SSQ_STREAM_READ_DECL(double)
-
-bool ssq_stream_read_bool(SSQ_STREAM *stream) {
-    return ssq_stream_read_uint8_t(stream);
+void ssq_stream_read(struct ssq_stream *const stream, void *const buffer,
+                     size_t count) {
+  count = minzu(count, ssq_stream_available(stream));
+  memcpy(buffer, stream->cursor, count);
+  ssq_stream_forward(stream, count);
 }
 
-/* Compute the number of bytes until the next null byte or end of stream. */
-static size_t ssq_stream_read_string_len(const SSQ_STREAM *stream) {
-    size_t len = 0;
-    while (len < ssq_stream_remaining(stream) && stream->data[stream->pos + len] != '\0')
-        ++len;
-    return len;
+#define SSQ_STREAM_READ(Type, Shorthand)                                       \
+  Type ssq_stream_read_##Shorthand(struct ssq_stream *const stream) {          \
+    Type value = 0;                                                            \
+    ssq_stream_read(stream, &value, sizeof(value));                            \
+    return value;                                                              \
+  }
+
+SSQ_STREAM_READ(float, f32)
+SSQ_STREAM_READ(double, f64)
+SSQ_STREAM_READ(int8_t, i8)
+SSQ_STREAM_READ(int16_t, i16)
+SSQ_STREAM_READ(int32_t, i32)
+SSQ_STREAM_READ(int64_t, i64)
+SSQ_STREAM_READ(uint8_t, u8)
+SSQ_STREAM_READ(uint16_t, u16)
+SSQ_STREAM_READ(uint32_t, u32)
+SSQ_STREAM_READ(uint64_t, u64)
+
+bool ssq_stream_read_bool(struct ssq_stream *const stream) {
+  return ssq_stream_read_u8(stream) != 0;
 }
 
-char *ssq_stream_read_string(SSQ_STREAM *stream, size_t *len) {
-    *len = ssq_stream_read_string_len(stream);
-    char *dest = calloc(*len + 1, sizeof (*dest));
-    if (dest == NULL)
-        return NULL;
-    const char *src = (const char *)(stream->data + stream->pos);
-#ifdef _WIN32
-    strncpy_s(dest, *len + 1, src, *len);
-#else /* !_WIN32 */
-    strncpy(dest, src, *len);
-#endif /* _WIN32 */
-    ssq_stream_advance(stream, *len + 1);
-    return dest;
+char *ssq_stream_read_string(struct ssq_stream *const stream,
+                             size_t *const size) {
+  *size = strnlen(stream->cursor, ssq_stream_available(stream));
+  char *const string = malloc(*size + 1);
+  if (string == NULL)
+    return NULL;
+  memcpy(string, stream->cursor, *size);
+  ssq_stream_forward(stream, *size + 1);
+  string[*size] = '\0';
+  return string;
+}
+
+void ssq_stream_write(struct ssq_stream *const stream, const void *const buffer,
+                      const size_t count) {
+  memcpy(stream->cursor, buffer, count);
+  ssq_stream_forward(stream, count);
+}
+
+#define SSQ_STREAM_WRITE(Type, Shorthand)                                      \
+  void ssq_stream_write_##Shorthand(struct ssq_stream *const stream,           \
+                                    const Type value) {                        \
+    ssq_stream_write(stream, &value, sizeof(value));                           \
+  }
+
+SSQ_STREAM_WRITE(float, f32)
+SSQ_STREAM_WRITE(double, f64)
+SSQ_STREAM_WRITE(int8_t, i8)
+SSQ_STREAM_WRITE(int16_t, i16)
+SSQ_STREAM_WRITE(int32_t, i32)
+SSQ_STREAM_WRITE(int64_t, i64)
+SSQ_STREAM_WRITE(uint8_t, u8)
+SSQ_STREAM_WRITE(uint16_t, u16)
+SSQ_STREAM_WRITE(uint32_t, u32)
+SSQ_STREAM_WRITE(uint64_t, u64)
+
+void ssq_stream_write_bool(struct ssq_stream *const stream, const bool value) {
+  return ssq_stream_write_u8(stream, value ? 1 : 0);
+}
+
+void ssq_stream_write_string(struct ssq_stream *const stream,
+                             const char *const value) {
+  const size_t size = strlen(value);
+  memcpy(stream->cursor, value, size);
+  ssq_stream_forward(stream, size);
+  ssq_stream_write_u8(stream, '\0');
 }

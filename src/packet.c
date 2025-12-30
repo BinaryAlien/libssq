@@ -1,99 +1,124 @@
 #include "packet.h"
 
-#include <string.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "error.h"
 #include "stream.h"
 
-static void ssq_packet_init_payload(SSQ_PACKET *packet, SSQ_STREAM *stream, struct ssq_error *error) {
-    packet->payload = malloc(packet->payload_len);
-    if (packet->payload != NULL)
-        ssq_stream_read(stream, packet->payload, packet->payload_len);
-    else
-        ssq_error_set_from_errno(error);
+#define SSQ_PACKET_FLAG_COMPRESSION 0x80000000
+
+static struct ssq_packet *ssq_packet_alloc(void) {
+  struct ssq_packet *const packet = malloc(sizeof(*packet));
+  if (packet == NULL)
+    return NULL;
+  memset(packet, 0, sizeof(*packet));
+  return packet;
 }
 
-static void ssq_packet_init_single(SSQ_PACKET *packet, SSQ_STREAM *stream, struct ssq_error *error) {
-    packet->total       = 1;
-    packet->number      = 0;
-    packet->payload_len = ssq_stream_remaining(stream);
-    ssq_packet_init_payload(packet, stream, error);
+static bool ssq_packet_read_payload(struct ssq_packet *const packet,
+                                    struct ssq_stream *const stream,
+                                    struct ssq_error *const error) {
+  packet->payload = malloc(packet->size);
+  if (packet->payload == NULL) {
+    ssq_error_set_from_errno(error);
+    return false;
+  }
+  ssq_stream_read(stream, packet->payload, packet->size);
+  return true;
 }
 
-static void ssq_packet_init_multi(SSQ_PACKET *packet, SSQ_STREAM *stream, struct ssq_error *error) {
-    packet->id          = ssq_stream_read_int32_t(stream);
-    packet->total       = ssq_stream_read_uint8_t(stream);
-    packet->number      = ssq_stream_read_uint8_t(stream);
-    packet->size        = ssq_stream_read_uint16_t(stream);
-    packet->payload_len = packet->size < ssq_stream_remaining(stream) ? packet->size : ssq_stream_remaining(stream);
-    if (packet->id & SSQ_PACKET_FLAG_COMPRESSION)
-        ssq_error_set(error, SSQE_UNSUPPORTED, "Cannot process packet: decompression is not supported");
-    else
-        ssq_packet_init_payload(packet, stream, error);
+static bool ssq_packet_read_simple(struct ssq_packet *const packet,
+                                   struct ssq_stream *const stream,
+                                   struct ssq_error *const error) {
+  packet->total = 1;
+  packet->number = 0;
+  packet->size = ssq_stream_available(stream);
+  return ssq_packet_read_payload(packet, stream, error);
 }
 
-SSQ_PACKET *ssq_packet_from_datagram(const uint8_t datagram[], uint16_t datagram_len, struct ssq_error *error) {
-    SSQ_PACKET *packet = malloc(sizeof (*packet));
-    if (packet == NULL) {
-        ssq_error_set_from_errno(error);
-        return NULL;
-    }
-    memset(packet, 0, sizeof (*packet));
-    SSQ_STREAM datagram_stream;
-    ssq_stream_wrap(&datagram_stream, datagram, datagram_len);
-    packet->header = ssq_stream_read_int32_t(&datagram_stream);
-    if (packet->header == SSQ_PACKET_HEADER_SINGLE)
-        ssq_packet_init_single(packet, &datagram_stream, error);
-    else if (packet->header == SSQ_PACKET_HEADER_MULTI)
-        ssq_packet_init_multi(packet, &datagram_stream, error);
-    else
-        ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid packet header");
-    if (error->code != SSQE_OK) {
-        free(packet->payload);
-        free(packet);
-        packet = NULL;
-    }
-    return packet;
+static bool ssq_packet_read_split(struct ssq_packet *const packet,
+                                  struct ssq_stream *const stream,
+                                  struct ssq_error *const error) {
+  packet->id = ssq_stream_read_i32(stream);
+  packet->total = ssq_stream_read_u8(stream);
+  packet->number = ssq_stream_read_u8(stream);
+  ssq_stream_forward(stream, sizeof(uint16_t));
+  packet->size = ssq_stream_available(stream);
+  if (packet->id & SSQ_PACKET_FLAG_COMPRESSION) {
+    ssq_error_set(error, SSQE_UNSUPPORTED, "Unsupported packet compression");
+    return false;
+  }
+  return ssq_packet_read_payload(packet, stream, error);
 }
 
-void ssq_packet_free(SSQ_PACKET *packet) {
-    free(packet->payload);
-    free(packet);
+static bool ssq_packet_read(struct ssq_packet *const packet,
+                            struct ssq_stream *const stream,
+                            struct ssq_error *const error) {
+  switch (packet->header = ssq_stream_read_i32(stream)) {
+  case SSQ_PACKET_HEADER_SIMPLE:
+    return ssq_packet_read_simple(packet, stream, error);
+  case SSQ_PACKET_HEADER_SPLIT:
+    return ssq_packet_read_split(packet, stream, error);
+  default:
+    ssq_error_set(error, SSQE_BAD, "Unexpected packet header");
+    return false;
+  }
 }
 
-bool ssq_packets_check_integrity(const SSQ_PACKET *const packets[], uint8_t packet_count) {
-    for (uint8_t i = 1; i < packet_count; ++i)
-        if (packets[i]->id != packets[0]->id)
-            return false;
-    return true;
+struct ssq_packet *ssq_packet_from_stream(struct ssq_stream *const stream,
+                                          struct ssq_error *const error) {
+  struct ssq_packet *const packet = ssq_packet_alloc();
+  if (packet == NULL) {
+    ssq_error_set_from_errno(error);
+    return NULL;
+  }
+  ssq_packet_read(packet, stream, error);
+  return packet;
 }
 
-static size_t ssq_packets_payload_len_sum(const SSQ_PACKET *const packets[], uint8_t packet_count) {
-    size_t len = 0;
-    for (uint8_t i = 0; i < packet_count; ++i)
-        len += packets[i]->payload_len;
-    return len;
+struct ssq_packet *ssq_packet_from_buffer(const uint8_t *const buffer,
+                                          const uint16_t size,
+                                          struct ssq_error *const error) {
+  struct ssq_stream stream;
+  ssq_stream_initialize(&stream, buffer, size);
+  return ssq_packet_from_stream(&stream, error);
 }
 
-uint8_t *ssq_packets_to_response(const SSQ_PACKET *const packets[], uint8_t packet_count, size_t *response_len, struct ssq_error *error) {
-    *response_len = ssq_packets_payload_len_sum(packets, packet_count);
-    uint8_t *response = malloc(*response_len);
-    if (response == NULL) {
-        ssq_error_set_from_errno(error);
-        return NULL;
-    }
-    size_t copy_offset = 0;
-    for (uint8_t i = 0; i < packet_count; ++i) {
-        memcpy(response + copy_offset, packets[i]->payload, packets[i]->payload_len);
-        copy_offset += packets[i]->payload_len;
-    }
-    return response;
+void ssq_packet_free(struct ssq_packet *packet) {
+  if (packet == NULL)
+    return;
+  free(packet->payload);
+  free(packet);
 }
 
-void ssq_packets_free(SSQ_PACKET *packets[], uint8_t packet_count) {
-    for (uint8_t i = 0; i < packet_count; ++i)
-        if (packets[i] != NULL)
-            ssq_packet_free(packets[i]);
-    free(packets);
+bool ssq_packets_check(const struct ssq_packet *const *const packets) {
+  for (uint8_t number = 1; number < packets[0]->total; ++number)
+    if (packets[number]->id != packets[0]->id)
+      return false;
+  return true;
+}
+
+size_t ssq_packets_size(const struct ssq_packet *const *const packets) {
+  size_t size = 0;
+  for (uint8_t number = 0; number < packets[0]->total; ++number)
+    size += packets[number]->size;
+  return size;
+}
+
+void ssq_packets_merge(const struct ssq_packet *const *const packets,
+                       uint8_t *buffer) {
+  for (uint8_t number = 0; number < packets[0]->total; ++number) {
+    const size_t size = packets[number]->size;
+    memcpy(buffer, packets[number]->payload, size);
+    buffer += size;
+  }
+}
+
+void ssq_packets_free(struct ssq_packet **const packets, const uint8_t count) {
+  for (uint8_t number = 0; number < count; ++number)
+    ssq_packet_free(packets[number]);
+  free(packets);
 }

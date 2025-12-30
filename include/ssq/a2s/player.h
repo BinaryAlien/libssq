@@ -1,5 +1,3 @@
-/* player.h -- A2S_PLAYER server queries. */
-
 #ifndef SSQ_A2S_PLAYER_H
 #define SSQ_A2S_PLAYER_H
 
@@ -11,16 +9,25 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct a2s_player {
-    uint8_t index;    /* Index of player chunk starting from 0.                     */
-    char   *name;     /* Name of the player.                                        */
-    size_t  name_len; /* Length of the `name' string.                               */
-    int32_t score;    /* Player's score (usually "frags" or "kills").               */
-    float   duration; /* Time (in seconds) player has been connected to the server. */
-} A2S_PLAYER;
+struct ssq_a2s_player {
+  /* Index of player chunk starting from 0. */
+  uint8_t index;
 
-A2S_PLAYER *ssq_player(struct ssq_server *server, uint8_t *player_count);
-void        ssq_player_free(A2S_PLAYER *players, uint8_t player_count);
+  /* Name of the player. */
+  char *name;
+  /* Size in bytes of the `name` UTF-8 string. */
+  size_t name_size;
+
+  /* Player's score (usually "frags" or "kills"). */
+  int32_t score;
+
+  /* Time (in seconds) player has been connected to the server. */
+  float duration;
+};
+
+struct ssq_a2s_player *ssq_a2s_player(struct ssq_server *server,
+                                      uint8_t *count);
+void ssq_a2s_player_free(struct ssq_a2s_player *players, uint8_t count);
 
 #ifdef __cplusplus
 }

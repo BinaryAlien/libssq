@@ -1,5 +1,6 @@
 #include "ssq/a2s/player.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,80 +10,76 @@
 #include "server.h"
 #include "stream.h"
 
-#define A2S_HEADER_PLAYER 0x55
-#define S2A_HEADER_PLAYER 0x44
+#define SSQ_REQUEST_HEADER_PLAYER 0x55
+#define SSQ_RESPONSE_HEADER_PLAYER 0x44
 
-#define A2S_PLAYER_CHALL_LEN    (sizeof (int32_t))
-#define A2S_PLAYER_CHALL_OFFSET (A2S_PLAYER_PAYLOAD_LEN - A2S_PLAYER_CHALL_LEN)
-
-#define A2S_PLAYER_PAYLOAD_LEN 9
-
-static const uint8_t payload_template[A2S_PLAYER_PAYLOAD_LEN] = {
-    0xFF, 0xFF, 0xFF, 0xFF, A2S_HEADER_PLAYER, 0xFF, 0xFF, 0xFF, 0xFF,
-};
-
-static inline void payload_init(uint8_t payload[A2S_PLAYER_PAYLOAD_LEN]) {
-    memcpy(payload, payload_template, A2S_PLAYER_PAYLOAD_LEN);
-}
-
-static inline void payload_set_challenge(uint8_t payload[A2S_PLAYER_PAYLOAD_LEN], int32_t chall) {
-    memcpy(payload + A2S_PLAYER_CHALL_OFFSET, &chall, sizeof (chall));
-}
-
-static uint8_t *ssq_player_query(struct ssq_server *server, size_t *response_len) {
-    uint8_t payload[A2S_PLAYER_PAYLOAD_LEN];
-    payload_init(payload);
-    uint8_t *response = ssq_query(server, payload, A2S_PLAYER_PAYLOAD_LEN, response_len);
-    while (response != NULL && ssq_response_has_challenge(response, *response_len)) {
-        int32_t chall = ssq_response_get_challenge(response, *response_len);
-        payload_set_challenge(payload, chall);
-        free(response);
-        response = ssq_query(server, payload, A2S_PLAYER_PAYLOAD_LEN, response_len);
-    }
+static struct ssq_response *
+ssq_a2s_player_query(struct ssq_server *const server,
+                     ssq_response_challenge challenge) {
+  uint8_t datagram[SSQ_PACKET_SIZE];
+  struct ssq_stream datagram_stream;
+  ssq_stream_initialize(&datagram_stream, datagram, sizeof(datagram));
+  ssq_stream_write_i32(&datagram_stream, SSQ_PACKET_HEADER_SIMPLE);
+  ssq_stream_write_u8(&datagram_stream, SSQ_REQUEST_HEADER_PLAYER);
+  ssq_stream_write(&datagram_stream, &challenge, sizeof(challenge));
+  const size_t datagram_size = ssq_stream_position(&datagram_stream);
+  struct ssq_response *const response =
+      ssq_query(server, datagram, datagram_size);
+  if (response == NULL || !ssq_response_has_challenge(response))
     return response;
+  challenge = ssq_response_get_challenge(response);
+  ssq_response_free(response);
+  return ssq_a2s_player_query(server, challenge);
 }
 
-A2S_PLAYER *ssq_player_deserialize(const uint8_t response[], size_t response_len, uint8_t *player_count, struct ssq_error *error) {
-    SSQ_STREAM stream;
-    ssq_stream_wrap(&stream, response, response_len);
-    if (ssq_response_is_truncated(response, response_len))
-        ssq_stream_advance(&stream, SSQ_PACKET_HEADER_LEN);
-    uint8_t response_header = ssq_stream_read_uint8_t(&stream);
-    if (response_header != S2A_HEADER_PLAYER) {
-        ssq_error_set(error, SSQE_INVALID_RESPONSE, "Invalid A2S_PLAYER response header");
-        return NULL;
-    }
-    *player_count = ssq_stream_read_uint8_t(&stream);
-    if (*player_count == 0)
-        return NULL;
-    A2S_PLAYER *players = calloc(*player_count, sizeof (*players));
-    if (players == NULL) {
-        ssq_error_set_from_errno(error);
-        return NULL;
-    }
-    for (uint8_t i = 0; i < *player_count; ++i) {
-        players[i].index    = ssq_stream_read_uint8_t(&stream);
-        players[i].name     = ssq_stream_read_string(&stream, &players[i].name_len);
-        players[i].score    = ssq_stream_read_int32_t(&stream);
-        players[i].duration = ssq_stream_read_float(&stream);
-    }
-    return players;
+struct ssq_a2s_player *
+ssq_a2s_player_deserialize(const struct ssq_response *const response,
+                           uint8_t *const count,
+                           struct ssq_error *const error) {
+  struct ssq_stream stream;
+  ssq_stream_initialize(&stream, response->data, response->size);
+  if (ssq_response_is_truncated(response))
+    ssq_stream_forward(&stream, sizeof(ssq_packet_header));
+  const ssq_response_header header = ssq_stream_read_u8(&stream);
+  if (header != SSQ_RESPONSE_HEADER_PLAYER) {
+    ssq_error_set(error, SSQE_BAD, "Unexpected A2S_PLAYER response header");
+    return NULL;
+  }
+  *count = ssq_stream_read_u8(&stream);
+  if (*count == 0)
+    return NULL;
+  struct ssq_a2s_player *const players = calloc(*count, sizeof(*players));
+  if (players == NULL) {
+    ssq_error_set_from_errno(error);
+    return NULL;
+  }
+  for (uint8_t index = 0; index < *count; ++index) {
+    players[index].index = ssq_stream_read_u8(&stream);
+    players[index].name =
+        ssq_stream_read_string(&stream, &players[index].name_size);
+    players[index].score = ssq_stream_read_i32(&stream);
+    players[index].duration = ssq_stream_read_f32(&stream);
+  }
+  return players;
 }
 
-A2S_PLAYER *ssq_player(struct ssq_server *server, uint8_t *player_count) {
-    size_t response_len;
-    uint8_t *response = ssq_player_query(server, &response_len);
-    if (response == NULL)
-        return NULL;
-    A2S_PLAYER *players = ssq_player_deserialize(response, response_len, player_count, &server->last_error);
-    free(response);
-    return players;
+struct ssq_a2s_player *ssq_a2s_player(struct ssq_server *const server,
+                                      uint8_t *const count) {
+  struct ssq_response *const response =
+      ssq_a2s_player_query(server, 0xFFFFFFFF);
+  if (response == NULL)
+    return NULL;
+  struct ssq_a2s_player *const players =
+      ssq_a2s_player_deserialize(response, count, &server->last_error);
+  ssq_response_free(response);
+  return players;
 }
 
-void ssq_player_free(A2S_PLAYER players[], uint8_t player_count) {
-    if (players == NULL)
-        return;
-    for (uint8_t i = 0; i < player_count; ++i)
-        free(players[i].name);
-    free(players);
+void ssq_a2s_player_free(struct ssq_a2s_player *const players,
+                         const uint8_t count) {
+  if (players == NULL)
+    return;
+  for (uint8_t index = 0; index < count; ++index)
+    free(players[index].name);
+  free(players);
 }

@@ -7,20 +7,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef uint32_t ssq_milliseconds;
+typedef uint32_t ssq_timeout_milliseconds;
 
 struct ssq_timeout;
 
 enum ssq_timeout_selector {
-    SSQ_TIMEOUT_RECV = 1 << 0,
-    SSQ_TIMEOUT_SEND = 1 << 1,
+  SSQ_TIMEOUT_RECV = 1 << 0,
+  SSQ_TIMEOUT_SEND = 1 << 1,
 };
-
-void ssq_timeout_set(
-    struct ssq_timeout       *timeout,
-    enum ssq_timeout_selector which,
-    ssq_milliseconds          duration
-);
 
 #ifdef __cplusplus
 }

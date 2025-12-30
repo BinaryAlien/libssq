@@ -1,126 +1,153 @@
 #include "query.h"
 
+#include <stddef.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else /* !_WIN32 */
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#define INVALID_SOCKET (-1)
+#define SOCKET_ERROR (-1)
+#endif /* _WIN32 */
 
 #include "packet.h"
 #include "server.h"
 
-#ifndef _WIN32
-# include <unistd.h>
-# define INVALID_SOCKET (-1)
-# define SOCKET_ERROR   (-1)
-# define closesocket    close
-typedef int SOCKET;
-#endif /* !_WIN32 */
+#ifdef _WIN32
+typedef SOCKET ssq_socket;
+#else  /* !_WIN32 */
+typedef int ssq_socket;
+#endif /* _WIN32 */
 
-static bool ssq_query_init_socket_timeout(SOCKET sockfd, const struct ssq_timeout *value) {
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&value->recv, sizeof (value->recv)) == SOCKET_ERROR)
-        return false;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&value->send, sizeof (value->send)) == SOCKET_ERROR)
-        return false;
-    return true;
+void ssq_socket_close(const ssq_socket descriptor) {
+#ifdef _WIN32
+  closesocket(descriptor);
+#else  /* !_WIN32 */
+  close(descriptor);
+#endif /* _WIN32 */
 }
 
-static SOCKET ssq_query_init_socket(struct ssq_server *server) {
-    SOCKET sockfd = INVALID_SOCKET;
-    for (struct addrinfo *addr = server->addresses; addr != NULL; addr = addr->ai_next) {
-        sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-        if (sockfd == INVALID_SOCKET)
-            continue;
-#ifdef _WIN32
-        if (connect(sockfd, addr->ai_addr, (int)addr->ai_addrlen) != SOCKET_ERROR)
-#else /* !_WIN32 */
-        if (connect(sockfd, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR)
-#endif /* _WIN32 */
-            break;
-        closesocket(sockfd);
-        sockfd = INVALID_SOCKET;
-    }
-    if (sockfd == INVALID_SOCKET) {
-        ssq_error_set(&server->last_error, SSQE_NO_SOCKET, "Could not create an endpoint for communication");
-        return INVALID_SOCKET;
-    }
-    if (!ssq_query_init_socket_timeout(sockfd, &server->timeout)) {
-#ifdef _WIN32
-        ssq_error_set_from_wsa(&server->last_error);
-#else /* !_WIN32 */
-        ssq_error_set_from_errno(&server->last_error);
-#endif /* _WIN32 */
-        closesocket(sockfd);
-        sockfd = INVALID_SOCKET;
-    }
-    return sockfd;
+ssq_socket ssq_socket_open(struct ssq_server *const server) {
+  ssq_socket descriptor = INVALID_SOCKET;
+  for (const struct addrinfo *address = server->addresses; address != NULL;
+       address = address->ai_next) {
+    descriptor =
+        socket(address->ai_family, address->ai_socktype, address->ai_protocol);
+    if (descriptor == INVALID_SOCKET)
+      continue;
+    if (connect(descriptor, address->ai_addr, address->ai_addrlen) !=
+        SOCKET_ERROR)
+      break;
+    ssq_socket_close(descriptor);
+    descriptor = INVALID_SOCKET;
+  }
+  if (descriptor == INVALID_SOCKET)
+    ssq_error_set(&server->last_error, SSQE_MUTE,
+                  "Could not open an endpoint for communication");
+  return descriptor;
 }
 
-static void ssq_query_send(SOCKET sockfd, const uint8_t payload[], size_t payload_len, struct ssq_error *error) {
+static bool ssq_socket_configure(const ssq_socket descriptor,
+                                 const struct ssq_timeout *const timeout,
+                                 struct ssq_error *const error) {
+  if (setsockopt(descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout->recv,
+                 sizeof(timeout->recv)) == SOCKET_ERROR) {
+    ssq_error_set_from_errno(error);
+    return false;
+  }
+  if (setsockopt(descriptor, SOL_SOCKET, SO_SNDTIMEO, &timeout->send,
+                 sizeof(timeout->send)) == SOCKET_ERROR) {
+    ssq_error_set_from_errno(error);
+    return false;
+  }
+  return true;
+}
+
+bool ssq_query_send(const ssq_socket descriptor, const uint8_t *const payload,
+                    const size_t size, struct ssq_error *const error) {
 #ifdef _WIN32
-    if (send(sockfd, (const char *)payload, (int)payload_len, 0) == SOCKET_ERROR)
-        ssq_error_set_from_wsa(error);
-#else /* !_WIN32 */
-    if (send(sockfd, payload, payload_len, 0) == SOCKET_ERROR)
+  if (send(descriptor, (const char *)payload, (int)payload_size, 0) ==
+      SOCKET_ERROR) {
+    ssq_error_set_from_wsa(error);
+    return false;
+  }
+#else  /* !_WIN32 */
+  if (send(descriptor, payload, size, 0) == SOCKET_ERROR) {
+    ssq_error_set_from_errno(error);
+    return false;
+  }
+#endif /* _WIN32 */
+  return true;
+}
+
+struct ssq_packet **ssq_query_recv(const ssq_socket descriptor,
+                                   struct ssq_error *const error) {
+  uint8_t packets_count = 1;
+  struct ssq_packet **packets = NULL;
+  for (uint8_t packets_received = 0; packets_received < packets_count;
+       ++packets_received) {
+    uint8_t datagram[SSQ_PACKET_SIZE];
+#ifdef _WIN32
+    const int datagram_size =
+        recv(descriptor, (char *)datagram, SSQ_PACKET_SIZE, 0);
+#else  /* !_WIN32 */
+    const ssize_t datagram_size =
+        recv(descriptor, datagram, SSQ_PACKET_SIZE, 0);
+#endif /* _WIN32 */
+    if (datagram_size == SOCKET_ERROR) {
+#ifdef _WIN32
+      ssq_error_set_from_wsa(error);
+#else  /* !_WIN32 */
+      ssq_error_set_from_errno(error);
+#endif /* _WIN32 */
+      break;
+    }
+    struct ssq_packet *const packet =
+        ssq_packet_from_buffer(datagram, datagram_size, error);
+    if (packet == NULL)
+      break;
+    if (packets == NULL) {
+      packets_count = packet->total;
+      packets = calloc(packets_count, sizeof(*packets));
+      if (packets == NULL) {
         ssq_error_set_from_errno(error);
-#endif /* _WIN32 */
+        ssq_packet_free(packet);
+        break;
+      }
+    }
+    packets[packet->number] = packet;
+  }
+  if (error->code != SSQE_OK && packets != NULL) {
+    ssq_packets_free(packets, packets_count);
+    packets = NULL;
+  }
+  return packets;
 }
 
-static SSQ_PACKET **ssq_query_recv(SOCKET sockfd, uint8_t *packet_count, struct ssq_error *error) {
-    *packet_count = 1;
-    SSQ_PACKET **packets = NULL;
-    for (uint8_t packets_received = 0; packets_received < *packet_count; ++packets_received) {
-        uint8_t datagram[SSQ_PACKET_SIZE];
-#ifdef _WIN32
-        int bytes_received = recv(sockfd, (char *)datagram, SSQ_PACKET_SIZE, 0);
-#else /* !_WIN32 */
-        ssize_t bytes_received = recv(sockfd, datagram, SSQ_PACKET_SIZE, 0);
-#endif /* _WIN32 */
-        if (bytes_received == SOCKET_ERROR) {
-#ifdef _WIN32
-            ssq_error_set_from_wsa(error);
-#else /* !_WIN32 */
-            ssq_error_set_from_errno(error);
-#endif /* _WIN32 */
-            break;
-        }
-        SSQ_PACKET *packet = ssq_packet_from_datagram(datagram, bytes_received, error);
-        if (error->code != SSQE_OK)
-            break;
-        bool is_first_packet = (packets == NULL);
-        if (is_first_packet) {
-            *packet_count = packet->total;
-            packets = calloc(*packet_count, sizeof (*packets));
-            if (packets == NULL) {
-                ssq_packet_free(packet);
-                ssq_error_set_from_errno(error);
-                break;
-            }
-        }
-        packets[packet->number] = packet;
-    }
-    if (error->code != SSQE_OK && packets != NULL) {
-        ssq_packets_free(packets, *packet_count);
-        packets = NULL;
-    }
-    return packets;
-}
-
-uint8_t *ssq_query(struct ssq_server *server, const uint8_t payload[], size_t payload_len, size_t *response_len) {
-    SOCKET sockfd = ssq_query_init_socket(server);
-    if (!ssq_server_eok(server))
-        return NULL;
-    ssq_query_send(sockfd, payload, payload_len, &server->last_error);
-    if (!ssq_server_eok(server))
-        goto end;
-    uint8_t packet_count = 0;
-    SSQ_PACKET **packets = ssq_query_recv(sockfd, &packet_count, &server->last_error);
-    if (!ssq_server_eok(server))
-        goto end;
-    const SSQ_PACKET *const *packets_readonly = (const SSQ_PACKET *const *)packets;
-    uint8_t *response = NULL;
-    if (ssq_packets_check_integrity(packets_readonly, packet_count))
-        response = ssq_packets_to_response(packets_readonly, packet_count, response_len, &server->last_error);
-    else
-        ssq_error_set(&server->last_error, SSQE_INVALID_RESPONSE, "Packet ID mismatch");
-    ssq_packets_free(packets, packet_count);
-end:
-    closesocket(sockfd);
-    return response;
+struct ssq_response *ssq_query(struct ssq_server *const server,
+                               const uint8_t *const payload,
+                               const size_t size) {
+  const ssq_socket descriptor = ssq_socket_open(server);
+  if (descriptor == INVALID_SOCKET)
+    return NULL;
+  struct ssq_response *response = NULL;
+  if (!ssq_socket_configure(descriptor, &server->timeout, &server->last_error))
+    goto exit;
+  if (!ssq_query_send(descriptor, payload, size, &server->last_error))
+    goto exit;
+  struct ssq_packet **const packets =
+      ssq_query_recv(descriptor, &server->last_error);
+  if (packets == NULL)
+    goto exit;
+  response =
+      ssq_response_from_packets((const struct ssq_packet *const *)packets);
+  ssq_packets_free(packets, packets[0]->total);
+exit:
+  ssq_socket_close(descriptor);
+  return response;
 }

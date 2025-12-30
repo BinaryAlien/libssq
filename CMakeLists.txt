@@ -11,7 +11,7 @@ set_target_properties(ssq
     C_STANDARD_REQUIRED ON
 )
 
-target_compile_definitions(ssq PUBLIC "$<$<PLATFORM_ID:Darwin,FreeBSD,Linux>:_POSIX_C_SOURCE=200112L>")
+target_compile_definitions(ssq PUBLIC "$<$<PLATFORM_ID:Darwin,FreeBSD,Linux>:_POSIX_C_SOURCE=200809L>")
 target_include_directories(ssq PRIVATE src)
 target_sources(ssq PUBLIC FILE_SET HEADERS BASE_DIRS include)
 

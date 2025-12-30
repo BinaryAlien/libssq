@@ -6,12 +6,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 enum ssq_error_code {
-    SSQE_OK = 0,
-    SSQE_SYSTEM,
-    SSQE_INVALID_RESPONSE,
-    SSQE_UNSUPPORTED,
-    SSQE_GAI,
-    SSQE_NO_SOCKET,
+  SSQE_OK = 0,
+  SSQE_SYSTEM,
+  SSQE_GAI,
+  SSQE_MUTE,
+  SSQE_BAD,
+  SSQE_UNSUPPORTED,
 };
 
 struct ssq_error;
