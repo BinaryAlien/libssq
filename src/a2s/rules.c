@@ -41,7 +41,8 @@ ssq_a2s_rules_deserialize(const struct ssq_response *const response,
     ssq_stream_forward(&stream, sizeof(ssq_packet_header));
   const ssq_response_header header = ssq_stream_read_u8(&stream);
   if (header != SSQ_RESPONSE_HEADER_RULES) {
-    ssq_error_set(error, SSQE_BAD, "Unexpected A2S_RULES response header");
+    ssq_error_initialize(error, SSQE_BAD,
+                         "Unexpected A2S_RULES response header");
     return NULL;
   }
   *count = ssq_stream_read_i16(&stream);
@@ -49,7 +50,7 @@ ssq_a2s_rules_deserialize(const struct ssq_response *const response,
     return NULL;
   struct ssq_a2s_rule *const rules = calloc(*count, sizeof(*rules));
   if (rules == NULL) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return NULL;
   }
   for (uint16_t index = 0; index < *count; ++index) {

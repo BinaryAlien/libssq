@@ -42,7 +42,8 @@ ssq_a2s_player_deserialize(const struct ssq_response *const response,
     ssq_stream_forward(&stream, sizeof(ssq_packet_header));
   const ssq_response_header header = ssq_stream_read_u8(&stream);
   if (header != SSQ_RESPONSE_HEADER_PLAYER) {
-    ssq_error_set(error, SSQE_BAD, "Unexpected A2S_PLAYER response header");
+    ssq_error_initialize(error, SSQE_BAD,
+                         "Unexpected A2S_PLAYER response header");
     return NULL;
   }
   *count = ssq_stream_read_u8(&stream);
@@ -50,7 +51,7 @@ ssq_a2s_player_deserialize(const struct ssq_response *const response,
     return NULL;
   struct ssq_a2s_player *const players = calloc(*count, sizeof(*players));
   if (players == NULL) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return NULL;
   }
   for (uint8_t index = 0; index < *count; ++index) {

@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +54,8 @@ struct ssq_server *ssq_server_from_address(const char *const host,
     return NULL;
   const int gai_errno = ssq_server_resolve(server, host, port);
   if (gai_errno != 0)
-    ssq_error_set(&server->last_error, SSQE_GAI, gai_strerror(gai_errno));
+    ssq_error_initialize(&server->last_error, SSQE_GAI,
+                         gai_strerror(gai_errno));
   return server;
 }
 

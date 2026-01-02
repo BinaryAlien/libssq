@@ -1,6 +1,7 @@
 #include "query.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #ifdef _WIN32
@@ -47,8 +48,8 @@ ssq_socket ssq_socket_open(struct ssq_server *const server) {
     descriptor = INVALID_SOCKET;
   }
   if (descriptor == INVALID_SOCKET)
-    ssq_error_set(&server->last_error, SSQE_MUTE,
-                  "Could not open an endpoint for communication");
+    ssq_error_initialize(&server->last_error, SSQE_MUTE,
+                         "Could not open an endpoint for communication");
   return descriptor;
 }
 
@@ -57,31 +58,27 @@ static bool ssq_socket_configure(const ssq_socket descriptor,
                                  struct ssq_error *const error) {
   if (setsockopt(descriptor, SOL_SOCKET, SO_RCVTIMEO, &timeout->recv,
                  sizeof(timeout->recv)) == SOCKET_ERROR) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return false;
   }
   if (setsockopt(descriptor, SOL_SOCKET, SO_SNDTIMEO, &timeout->send,
                  sizeof(timeout->send)) == SOCKET_ERROR) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return false;
   }
   return true;
 }
 
-bool ssq_query_send(const ssq_socket descriptor, const uint8_t *const payload,
+bool ssq_query_send(const ssq_socket descriptor, const void *const payload,
                     const size_t size, struct ssq_error *const error) {
-#ifdef _WIN32
-  if (send(descriptor, (const char *)payload, (int)payload_size, 0) ==
-      SOCKET_ERROR) {
-    ssq_error_set_from_wsa(error);
-    return false;
-  }
-#else  /* !_WIN32 */
   if (send(descriptor, payload, size, 0) == SOCKET_ERROR) {
-    ssq_error_set_from_errno(error);
+#ifdef _WIN32
+    ssq_error_initialize_wsa(error);
+#else  /* !_WIN32 */
+    ssq_error_initialize_errno(error);
+#endif /* _WIN32 */
     return false;
   }
-#endif /* _WIN32 */
   return true;
 }
 
@@ -101,9 +98,9 @@ struct ssq_packet **ssq_query_recv(const ssq_socket descriptor,
 #endif /* _WIN32 */
     if (datagram_size == SOCKET_ERROR) {
 #ifdef _WIN32
-      ssq_error_set_from_wsa(error);
+      ssq_error_initialize_wsa(error);
 #else  /* !_WIN32 */
-      ssq_error_set_from_errno(error);
+      ssq_error_initialize_errno(error);
 #endif /* _WIN32 */
       break;
     }
@@ -115,7 +112,7 @@ struct ssq_packet **ssq_query_recv(const ssq_socket descriptor,
       packets_count = packet->total;
       packets = calloc(packets_count, sizeof(*packets));
       if (packets == NULL) {
-        ssq_error_set_from_errno(error);
+        ssq_error_initialize_errno(error);
         ssq_packet_free(packet);
         break;
       }
@@ -130,8 +127,7 @@ struct ssq_packet **ssq_query_recv(const ssq_socket descriptor,
 }
 
 struct ssq_response *ssq_query(struct ssq_server *const server,
-                               const uint8_t *const payload,
-                               const size_t size) {
+                               const void *const payload, const size_t size) {
   const ssq_socket descriptor = ssq_socket_open(server);
   if (descriptor == INVALID_SOCKET)
     return NULL;

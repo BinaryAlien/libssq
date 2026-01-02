@@ -90,7 +90,7 @@ static void ssq_a2s_info_print(const struct ssq_a2s_info *info) {
   static const char *server_type_names[] = {
       [SSQ_A2S_INFO_SERVER_TYPE_DEDICATED] = "dedicated",
       [SSQ_A2S_INFO_SERVER_TYPE_NON_DEDICATED] = "non-dedicated",
-      [SSQ_A2S_INFO_SERVER_TYPE_STV_RELAY] = "SourceTV relay (proxy)",
+      [SSQ_A2S_INFO_SERVER_TYPE_SOURCE_TV_RELAY] = "SourceTV relay (proxy)",
       [SSQ_A2S_INFO_SERVER_TYPE_UNKNOWN] = "?",
   };
   static const char *environment_names[] = {
@@ -110,16 +110,16 @@ static void ssq_a2s_info_print(const struct ssq_a2s_info *info) {
          info->players, info->max_players, info->bots);
   printf("Server type.......: %s\n", server_type_names[info->server_type]);
   printf("Environment.......: %s\n", environment_names[info->environment]);
-  printf("Visibility........: %s\n", info->visibility ? "private" : "public");
-  printf("VAC...............: %s\n", info->vac ? "secured" : "unsecured");
+  printf("Password..........: %s\n", info->password ? "yes" : "no");
+  printf("Secure............: %s\n", info->secure ? "yes" : "no");
   printf("Version...........: %s\n", info->version);
   if (ssq_a2s_info_has_port(info))
     printf("Port..............: %" PRIu16 "\n", info->port);
   if (ssq_a2s_info_has_steamid(info))
     printf("SteamID...........: %" PRIu64 "\n", info->steamid);
-  if (ssq_a2s_info_has_stv(info)) {
-    printf("Port (SourceTV)...: %" PRIu16 "\n", info->stv_port);
-    printf("Name (SourceTV)...: %s\n", info->stv_name);
+  if (ssq_a2s_info_has_source_tv(info)) {
+    printf("Port (SourceTV)...: %" PRIu16 "\n", info->source_tv_port);
+    printf("Name (SourceTV)...: %s\n", info->source_tv_name);
   }
   if (ssq_a2s_info_has_keywords(info))
     printf("Keywords..........: %s\n", info->keywords);

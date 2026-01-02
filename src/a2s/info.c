@@ -17,7 +17,7 @@
 #define SSQ_A2S_INFO_EDF_KEYWORDS 0x20
 #define SSQ_A2S_INFO_EDF_PORT 0x80
 #define SSQ_A2S_INFO_EDF_STEAMID 0x10
-#define SSQ_A2S_INFO_EDF_STV 0x40
+#define SSQ_A2S_INFO_EDF_SOURCE_TV 0x40
 
 static struct ssq_response *
 ssq_a2s_info_query(struct ssq_server *const server,
@@ -62,7 +62,7 @@ ssq_a2s_info_read_server_type(struct ssq_stream *stream) {
   case 'l':
     return SSQ_A2S_INFO_SERVER_TYPE_NON_DEDICATED;
   case 'p':
-    return SSQ_A2S_INFO_SERVER_TYPE_STV_RELAY;
+    return SSQ_A2S_INFO_SERVER_TYPE_SOURCE_TV_RELAY;
   default:
     return SSQ_A2S_INFO_SERVER_TYPE_UNKNOWN;
   }
@@ -77,12 +77,13 @@ ssq_a2s_info_deserialize(const struct ssq_response *const response,
     ssq_stream_forward(&stream, sizeof(ssq_packet_header));
   const ssq_response_header header = ssq_stream_read_u8(&stream);
   if (header != SSQ_RESPONSE_HEADER_INFO) {
-    ssq_error_set(error, SSQE_BAD, "Unexpected A2S_INFO response header");
+    ssq_error_initialize(error, SSQE_BAD,
+                         "Unexpected A2S_INFO response header");
     return NULL;
   }
   struct ssq_a2s_info *const info = malloc(sizeof(*info));
   if (info == NULL) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return NULL;
   }
   memset(info, 0, sizeof(*info));
@@ -97,8 +98,8 @@ ssq_a2s_info_deserialize(const struct ssq_response *const response,
   info->bots = ssq_stream_read_u8(&stream);
   info->server_type = ssq_a2s_info_read_server_type(&stream);
   info->environment = ssq_a2s_info_read_environment(&stream);
-  info->visibility = ssq_stream_read_bool(&stream);
-  info->vac = ssq_stream_read_bool(&stream);
+  info->password = ssq_stream_read_bool(&stream);
+  info->secure = ssq_stream_read_bool(&stream);
   info->version = ssq_stream_read_string(&stream, &info->version_size);
   if (ssq_stream_available(&stream) == 0)
     return info;
@@ -107,9 +108,10 @@ ssq_a2s_info_deserialize(const struct ssq_response *const response,
     info->port = ssq_stream_read_u16(&stream);
   if (ssq_a2s_info_has_steamid(info))
     info->steamid = ssq_stream_read_u64(&stream);
-  if (ssq_a2s_info_has_stv(info)) {
-    info->stv_port = ssq_stream_read_u16(&stream);
-    info->stv_name = ssq_stream_read_string(&stream, &info->stv_name_size);
+  if (ssq_a2s_info_has_source_tv(info)) {
+    info->source_tv_port = ssq_stream_read_u16(&stream);
+    info->source_tv_name =
+        ssq_stream_read_string(&stream, &info->source_tv_name_size);
   }
   if (ssq_a2s_info_has_keywords(info))
     info->keywords = ssq_stream_read_string(&stream, &info->keywords_size);
@@ -136,8 +138,8 @@ void ssq_a2s_info_free(struct ssq_a2s_info *const info) {
   free(info->folder);
   free(info->game);
   free(info->version);
-  if (ssq_a2s_info_has_stv(info))
-    free(info->stv_name);
+  if (ssq_a2s_info_has_source_tv(info))
+    free(info->source_tv_name);
   if (ssq_a2s_info_has_keywords(info))
     free(info->keywords);
   free(info);
@@ -159,6 +161,6 @@ bool ssq_a2s_info_has_steamid(const struct ssq_a2s_info *const info) {
   return info->edf & SSQ_A2S_INFO_EDF_STEAMID;
 }
 
-bool ssq_a2s_info_has_stv(const struct ssq_a2s_info *const info) {
-  return info->edf & SSQ_A2S_INFO_EDF_STV;
+bool ssq_a2s_info_has_source_tv(const struct ssq_a2s_info *const info) {
+  return info->edf & SSQ_A2S_INFO_EDF_SOURCE_TV;
 }

@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,7 +24,7 @@ static bool ssq_packet_read_payload(struct ssq_packet *const packet,
                                     struct ssq_error *const error) {
   packet->payload = malloc(packet->size);
   if (packet->payload == NULL) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return false;
   }
   ssq_stream_read(stream, packet->payload, packet->size);
@@ -48,7 +49,8 @@ static bool ssq_packet_read_split(struct ssq_packet *const packet,
   ssq_stream_forward(stream, sizeof(uint16_t));
   packet->size = ssq_stream_available(stream);
   if (packet->id & SSQ_PACKET_FLAG_COMPRESSION) {
-    ssq_error_set(error, SSQE_UNSUPPORTED, "Unsupported packet compression");
+    ssq_error_initialize(error, SSQE_UNSUPPORTED,
+                         "Unsupported packet compression");
     return false;
   }
   return ssq_packet_read_payload(packet, stream, error);
@@ -63,7 +65,7 @@ static bool ssq_packet_read(struct ssq_packet *const packet,
   case SSQ_PACKET_HEADER_SPLIT:
     return ssq_packet_read_split(packet, stream, error);
   default:
-    ssq_error_set(error, SSQE_BAD, "Unexpected packet header");
+    ssq_error_initialize(error, SSQE_BAD, "Unexpected packet header");
     return false;
   }
 }
@@ -72,15 +74,15 @@ struct ssq_packet *ssq_packet_from_stream(struct ssq_stream *const stream,
                                           struct ssq_error *const error) {
   struct ssq_packet *const packet = ssq_packet_alloc();
   if (packet == NULL) {
-    ssq_error_set_from_errno(error);
+    ssq_error_initialize_errno(error);
     return NULL;
   }
   ssq_packet_read(packet, stream, error);
   return packet;
 }
 
-struct ssq_packet *ssq_packet_from_buffer(const uint8_t *const buffer,
-                                          const uint16_t size,
+struct ssq_packet *ssq_packet_from_buffer(const void *const buffer,
+                                          const size_t size,
                                           struct ssq_error *const error) {
   struct ssq_stream stream;
   ssq_stream_initialize(&stream, buffer, size);
@@ -109,16 +111,17 @@ size_t ssq_packets_size(const struct ssq_packet *const *const packets) {
 }
 
 void ssq_packets_merge(const struct ssq_packet *const *const packets,
-                       uint8_t *buffer) {
+                       void *const buffer) {
+  uint8_t *cursor = buffer;
   for (uint8_t number = 0; number < packets[0]->total; ++number) {
     const size_t size = packets[number]->size;
-    memcpy(buffer, packets[number]->payload, size);
-    buffer += size;
+    memcpy(cursor, packets[number]->payload, size);
+    cursor += size;
   }
 }
 
-void ssq_packets_free(struct ssq_packet **const packets, const uint8_t count) {
-  for (uint8_t number = 0; number < count; ++number)
-    ssq_packet_free(packets[number]);
+void ssq_packets_free(struct ssq_packet **const packets, const size_t count) {
+  for (size_t index = 0; index < count; ++index)
+    ssq_packet_free(packets[index]);
   free(packets);
 }

@@ -14,7 +14,7 @@ enum ssq_a2s_info_server_type {
   SSQ_A2S_INFO_SERVER_TYPE_UNKNOWN = '\0',
   SSQ_A2S_INFO_SERVER_TYPE_DEDICATED = 'd',
   SSQ_A2S_INFO_SERVER_TYPE_NON_DEDICATED = 'l',
-  SSQ_A2S_INFO_SERVER_TYPE_STV_RELAY = 'p',
+  SSQ_A2S_INFO_SERVER_TYPE_SOURCE_TV_RELAY = 'p',
 };
 
 enum ssq_a2s_info_environment {
@@ -67,10 +67,10 @@ struct ssq_a2s_info {
   enum ssq_a2s_info_environment environment;
 
   /* Whether the server requires a password. */
-  bool visibility;
+  bool password;
 
   /* Whether the server uses VAC. */
-  bool vac;
+  bool secure;
 
   /* Version of the game installed on the server. */
   char *version;
@@ -88,11 +88,12 @@ struct ssq_a2s_info {
   uint64_t steamid;
 
   /* Spectator port number for SourceTV. */
-  uint16_t stv_port;
+  uint16_t source_tv_port;
+
   /* Name of the spectator server for SourceTV. */
-  char *stv_name;
-  /* Size in bytes of the `stv_name` UTF-8 string. */
-  size_t stv_name_size;
+  char *source_tv_name;
+  /* Size in bytes of the `source_tv_name` UTF-8 string. */
+  size_t source_tv_name_size;
 
   /* Tags that describe the game according to the server. */
   char *keywords;
@@ -110,7 +111,7 @@ bool ssq_a2s_info_has_gameid(const struct ssq_a2s_info *info);
 bool ssq_a2s_info_has_keywords(const struct ssq_a2s_info *info);
 bool ssq_a2s_info_has_port(const struct ssq_a2s_info *info);
 bool ssq_a2s_info_has_steamid(const struct ssq_a2s_info *info);
-bool ssq_a2s_info_has_stv(const struct ssq_a2s_info *info);
+bool ssq_a2s_info_has_source_tv(const struct ssq_a2s_info *info);
 
 #ifdef __cplusplus
 }

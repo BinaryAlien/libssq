@@ -33,19 +33,15 @@ struct ssq_packet {
   size_t size;
 };
 
-struct ssq_packet *ssq_packet_from_buffer(const uint8_t *buffer, uint16_t size,
+struct ssq_packet *ssq_packet_from_buffer(const void *buffer, size_t size,
                                           struct ssq_error *error);
-
 void ssq_packet_free(struct ssq_packet *packet);
 
 bool ssq_packets_check(const struct ssq_packet *const *packets);
-
 size_t ssq_packets_size(const struct ssq_packet *const *packets);
+void ssq_packets_merge(const struct ssq_packet *const *packets, void *buffer);
 
-void ssq_packets_merge(const struct ssq_packet *const *packets,
-                       uint8_t *buffer);
-
-void ssq_packets_free(struct ssq_packet **packets, const uint8_t count);
+void ssq_packets_free(struct ssq_packet **packets, const size_t count);
 
 #ifdef __cplusplus
 }
