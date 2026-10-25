@@ -11,7 +11,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 struct ssq_buffer *ssq_query(struct ssq_server *server, const void *payload,
-                             size_t size);
+                             size_t payload_size);
 
 #ifdef __cplusplus
 }

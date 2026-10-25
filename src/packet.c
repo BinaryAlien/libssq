@@ -113,11 +113,14 @@ static size_t ssq_packets_size(const struct ssq_packet *const *const packets) {
 struct ssq_buffer *ssq_packets_merge(const struct ssq_packet *const *packets) {
   const size_t response_size = ssq_packets_size(packets);
   struct ssq_buffer *response = ssq_buffer_alloc(response_size);
+  if (response == NULL)
+    return NULL;
   uint8_t *cursor = response->data;
   for (uint8_t number = 0; number < packets[0]->total; ++number) {
     memcpy(cursor, packets[number]->payload, packets[number]->size);
     cursor += packets[number]->size;
   }
+  return response;
 }
 
 void ssq_packets_free(struct ssq_packet **const packets, const size_t count) {

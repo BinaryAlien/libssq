@@ -6,11 +6,15 @@
 #include <winsock2.h>
 #endif /* _WIN32 */
 
-#include <ssq/a2s.h>
+#include <ssq/a2s/info.h>
+#include <ssq/a2s/player.h>
+#include <ssq/a2s/rules.h>
 
 static void ssq_a2s_info_print(const struct ssq_a2s_info *info);
+
 static void ssq_a2s_player_print(const struct ssq_a2s_player *players,
                                  uint8_t count);
+
 static void ssq_a2s_rules_print(const struct ssq_a2s_rule *rules,
                                 uint16_t count);
 

@@ -8,5 +8,6 @@ target_sources(ssq PRIVATE
   query.c
   response.c
   server.c
+  socket.c
   timeout.c
 )

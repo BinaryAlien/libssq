@@ -18,6 +18,10 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        devShells = {
+          default = import ./shell.nix { inherit pkgs; };
+        };
+
         packages = rec {
           default = ssq;
           ssq = import ./default.nix { inherit pkgs; };
