@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "buffer.h"
 #include "ssq/error.h"
 
 #define SSQ_PACKET_HEADER_SIMPLE 0xFFFFFFFF
@@ -16,11 +17,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef int32_t ssq_packet_header;
-
 struct ssq_packet {
   /* The packet's header. */
-  ssq_packet_header header;
+  int32_t header;
   /* Unique number assigned by server per answer. */
   int32_t id;
   /* The total number of packets in the response. */
@@ -33,13 +32,15 @@ struct ssq_packet {
   size_t size;
 };
 
-struct ssq_packet *ssq_packet_from_buffer(const void *buffer, size_t size,
+struct ssq_packet *ssq_packet_from_buffer(const void *buffer,
+                                          size_t buffer_size,
                                           struct ssq_error *error);
+
 void ssq_packet_free(struct ssq_packet *packet);
 
 bool ssq_packets_check(const struct ssq_packet *const *packets);
-size_t ssq_packets_size(const struct ssq_packet *const *packets);
-void ssq_packets_merge(const struct ssq_packet *const *packets, void *buffer);
+
+struct ssq_buffer *ssq_packets_merge(const struct ssq_packet *const *packets);
 
 void ssq_packets_free(struct ssq_packet **packets, const size_t count);
 

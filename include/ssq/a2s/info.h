@@ -105,13 +105,18 @@ struct ssq_a2s_info {
 };
 
 struct ssq_a2s_info *ssq_a2s_info(struct ssq_server *server);
+
 void ssq_a2s_info_free(struct ssq_a2s_info *info);
 
 bool ssq_a2s_info_has_gameid(const struct ssq_a2s_info *info);
+
 bool ssq_a2s_info_has_keywords(const struct ssq_a2s_info *info);
+
 bool ssq_a2s_info_has_port(const struct ssq_a2s_info *info);
-bool ssq_a2s_info_has_steamid(const struct ssq_a2s_info *info);
+
 bool ssq_a2s_info_has_source_tv(const struct ssq_a2s_info *info);
+
+bool ssq_a2s_info_has_steamid(const struct ssq_a2s_info *info);
 
 #ifdef __cplusplus
 }

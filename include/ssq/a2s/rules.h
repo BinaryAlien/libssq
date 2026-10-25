@@ -22,6 +22,7 @@ struct ssq_a2s_rule {
 };
 
 struct ssq_a2s_rule *ssq_a2s_rules(struct ssq_server *server, uint16_t *count);
+
 void ssq_a2s_rules_free(struct ssq_a2s_rule *rules, uint16_t count);
 
 #ifdef __cplusplus

@@ -7,9 +7,8 @@
 #include <winsock2.h>
 #endif /* _WIN32 */
 
-void ssq_error_initialize(struct ssq_error *const error,
-                          const enum ssq_error_code code,
-                          const char *const message) {
+void ssq_error_set(struct ssq_error *const error,
+                   const enum ssq_error_code code, const char *const message) {
   error->code = code;
 #ifdef _WIN32
   strncpy_s(error->message, SSQ_ERROR_MESSAGE_SIZE, message,
@@ -19,7 +18,7 @@ void ssq_error_initialize(struct ssq_error *const error,
 #endif /* _WIN32 */
 }
 
-void ssq_error_initialize_errno(struct ssq_error *const error) {
+void ssq_error_set_from_errno(struct ssq_error *const error) {
   error->code = SSQE_SYSTEM;
 #ifdef _WIN32
   strerror_s(error->message, SSQ_ERROR_MESSAGE_SIZE, errno);
@@ -29,7 +28,7 @@ void ssq_error_initialize_errno(struct ssq_error *const error) {
 }
 
 #ifdef _WIN32
-void ssq_error_initialize_wsa(struct ssq_error *const error) {
+void ssq_error_set_from_wsa(struct ssq_error *const error) {
   error->code = SSQE_SYSTEM;
   FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, WSAGetLastError(),

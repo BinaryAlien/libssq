@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(ssq VERSION 0.0.0 LANGUAGES C)
+project(ssq VERSION 0.1.0 LANGUAGES C)
 
 add_library(ssq)
 
@@ -13,7 +13,6 @@ set_target_properties(ssq
 
 target_compile_definitions(ssq PUBLIC "$<$<PLATFORM_ID:Darwin,FreeBSD,Linux>:_POSIX_C_SOURCE=200809L>")
 target_include_directories(ssq PRIVATE src)
-target_sources(ssq PUBLIC FILE_SET HEADERS BASE_DIRS include)
 
 add_subdirectory(include)
 add_subdirectory(src)

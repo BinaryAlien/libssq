@@ -3,15 +3,15 @@
 
 #include <stddef.h>
 
-#include "response.h"
+#include "buffer.h"
 #include "server.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-struct ssq_response *ssq_query(struct ssq_server *server, const void *payload,
-                               size_t size);
+struct ssq_buffer *ssq_query(struct ssq_server *server, const void *payload,
+                             size_t size);
 
 #ifdef __cplusplus
 }

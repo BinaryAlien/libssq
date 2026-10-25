@@ -15,13 +15,13 @@ struct ssq_error {
   char message[SSQ_ERROR_MESSAGE_SIZE];
 };
 
-void ssq_error_initialize(struct ssq_error *error, enum ssq_error_code code,
-                          const char *message);
+void ssq_error_set(struct ssq_error *error, enum ssq_error_code code,
+                   const char *message);
 
-void ssq_error_initialize_errno(struct ssq_error *error);
+void ssq_error_set_from_errno(struct ssq_error *error);
 
 #ifdef _WIN32
-void ssq_error_initialize_wsa(struct ssq_error *error);
+void ssq_error_set_from_wsa(struct ssq_error *error);
 #endif /* _WIN32 */
 
 #ifdef __cplusplus

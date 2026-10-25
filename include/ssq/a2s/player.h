@@ -27,6 +27,7 @@ struct ssq_a2s_player {
 
 struct ssq_a2s_player *ssq_a2s_player(struct ssq_server *server,
                                       uint8_t *count);
+
 void ssq_a2s_player_free(struct ssq_a2s_player *players, uint8_t count);
 
 #ifdef __cplusplus
